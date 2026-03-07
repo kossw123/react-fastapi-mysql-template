@@ -1,0 +1,28 @@
+{
+  "name": "react-fastapi-mysql",
+
+  "dockerComposeFile": "docker-compose.yml",
+
+  "service": "workspace",
+
+  "workspaceFolder": "/workspace",
+
+  "forwardPorts": [3000, 8000, 3306],
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+
+  "postCreateCommand": "pip install -r server/requirements.txt && cd client && npm install && npm install axios --save",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  }
+}
