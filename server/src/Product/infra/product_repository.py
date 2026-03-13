@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from src.product_model import ProductModel
+from src.Product.infra.product_model import ProductModel
 
 class ProductRepository():
     def __init__(self, session: Session):
