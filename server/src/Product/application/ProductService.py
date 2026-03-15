@@ -3,6 +3,7 @@ from src.shared.CommandBus import CommandBus
 from src.shared.EventDispatcher import EventDispatcher
 from src.shared.UnitOfWork import UnitOfWork
 from src.Product.domain.events import *
+from src.Product.domain.
 
 class ProductService():
     def __init__(self, bus: CommandBus, dispatcher: EventDispatcher, uow: UnitOfWork):
@@ -10,7 +11,7 @@ class ProductService():
     
     def create_product(self, id, name, price):
         with self.extension.command_context():
-            self.extension.bus.dispatch(ProductCreated(id, name, price))
+            self.extension.bus.dispatch(ProductCreate(id, name, price))
 
     def activate_product(self, id):
         with self.extension.command_context():
@@ -30,7 +31,6 @@ class __ProductExtension():
     def command_context(self):
         with self.uow:
             yield
-
         self._publish_events()
 
     def _publish_event(self):
