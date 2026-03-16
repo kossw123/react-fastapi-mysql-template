@@ -1,59 +1,50 @@
-{ pkgs, ... }: {
-  # 최신 패키지를 지원하는 채널 선택
-  channel = "stable-24.05";
+  { pkgs, ... }: {
 
-  packages = [
-    # Node.js 설정 (Vite용)
-    pkgs.nodejs_22
+    channel = "stable-24.05";
 
-    # Python 설정 (FastAPI용)
-    pkgs.python312
-    pkgs.python312Packages.pip
-    pkgs.python312Packages.virtualenv # 가상환경 권장
-  ];
-
-  # 환경 변수 설정 (필요 시)
-  env = {};
-
-    idx = {
-    # 1. 확장 프로그램 설정
-    extensions = [
-      "ms-python.python"
-      "ms-ceintl.vscode-language-pack-ko"
+    packages = [
+      pkgs.nodejs_22
+      pkgs.python311
+      pkgs.git
+      pkgs.mysql80
+      pkgs.direnv
     ];
 
-    workspace = {
-      # 처음 생성될 때 (신규 생성 시에만 작동)
-      onCreate = {
-        npm-install = "cd client && npm install";
-      };
-      
-      # 워크스페이스가 열릴 때마다 실행 (현재 환경 복구 및 자동화 핵심)
-      onStart = {
-        setup-python = ''
-          cd server
-          # 1. .venv 폴더가 없으면 생성
-          if [ ! -d ".venv" ]; then
-            python -m venv .venv
-          fi
-          # 2. 가상환경 활성화 및 패키지 설치
-          source .venv/bin/activate
-          pip install -r requirements.txt
-        '';
-      };
-    };
+    idx = {
 
+      extensions = [
+        "ms-python.python"
+        "ms-python.vscode-pylance"
+      ];
 
+      workspace = {
+        onCreate = {
+          # 가상환경 없이 설치하려고 했으나, IDX 자체에서 전역 환경은 read-only이기 때문에
+          # 그렇기 때문에 가상환경을 생성하여 설치한다.
+          # 설치하지 못하게끔 한다.
+          python-env = ''
+            echo "Creating Python virtual environment..."
+            cd server
+            
+            if [ ! -d ".venv" ]; then
+              python -m venv .venv
+            fi
+            
+            echo "Activating venv and installing requirements..."
+            source .venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+          '';
 
-    # 3. 프리뷰 설정 (쉼표 없이 공백으로 구분)
-    previews = {
-      enable = true;
-      previews = {
-        web = {
-          command = [ "npm" "run" "dev" "--" "--port" "$PORT" "--host" "0.0.0.0" ];
-          manager = "web";
+          node-env = ''
+            echo "Installing frontend dependencies..."
+            cd client
+            npm install
+            npm install axios
+          '';
         };
       };
+
     };
-  };
-}
+
+  }
