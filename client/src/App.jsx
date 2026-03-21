@@ -4,12 +4,16 @@ import axios from "axios";
 function App() {
   const [products, setProducts] = useState([]);
 
-  const API = "https://upgraded-space-adventure-967j956r9ggc7qqv-8000.app.github.dev";
+  // codespace
+  // const API = "https://upgraded-space-adventure-967j956r9ggc7qqv-8000.app.github.dev";
+
+  // Project IDX
+  const API = "https://8000-firebase-template-1773905411677.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev";
 
   // 처음 렌더링될 때 상품 목록 가져오기
   useEffect(() => {
     axios
-      .get(`${API}/products`)
+      .get(`${API}/products`, { withCredentials: true })
       .then((res) => {
         setProducts(res.data);
       })
@@ -24,7 +28,7 @@ function App() {
       .post(`${API}/products`, {
         name: "Americano",
         price: 3000,
-      })
+      }, { withCredentials: true })
       .then((res) => {
         setProducts((prev) => [...prev, res.data]);
       })

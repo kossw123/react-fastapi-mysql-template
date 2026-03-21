@@ -15,10 +15,12 @@ app.include_router(router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://upgraded-space-adventure-967j956r9ggc7qqv-3000.app.github.dev",
-        "https://localhost:3000"
-        ],
+    # allow_origins=[
+    #     "https://upgraded-space-adventure-967j956r9ggc7qqv-3000.app.github.dev",
+    #     "https://localhost:3000",
+    #     "https://3000-firebase-template-1773905411677.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev"
+    #     ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]

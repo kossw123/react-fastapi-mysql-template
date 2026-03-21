@@ -1,6 +1,10 @@
 from sqlmodel import create_engine, Session
 
-DATABASE_URL = "mysql+pymysql://user:password@mysql/testdb"
+# codespace
+# DATABASE_URL = "mysql+pymysql://user:password@mysql/testdb"
+
+# Project IDX
+DATABASE_URL = "mysql+pymysql://user:password@localhost:3306/testdb"
 
 engine = create_engine(DATABASE_URL)
 
