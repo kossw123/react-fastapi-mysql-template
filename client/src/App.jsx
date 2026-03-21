@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
-  const [products, setProducts] = useState([]);
-
-  const API = "https://upgraded-space-adventure-967j956r9ggc7qqv-8000.app.github.dev";
+    const [products, setProducts] = useState([]);
+    
+    // codespace
+    // const API = "https://upgraded-space-adventure-967j956r9ggc7qqv-8000.app.github.dev";
+    
+    // local
+    const API = "http://localhost:8000"
 
   // 처음 렌더링될 때 상품 목록 가져오기
   useEffect(() => {

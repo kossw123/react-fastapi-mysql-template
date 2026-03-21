@@ -1,6 +1,14 @@
 from sqlmodel import create_engine, Session
 
-DATABASE_URL = "mysql+pymysql://user:password@mysql/testdb"
+
+# e.g
+# DATABASE_URL = mysql+pymysql://<username>:<password>@<host>:<port>/<database>
+
+# codespace
+# DATABASE_URL = "mysql+pymysql://user:password@mysql/testdb"
+
+# local
+DATABASE_URL = "mysql+pymysql://root:@localhost:3306/testdb"
 
 engine = create_engine(DATABASE_URL)
 
