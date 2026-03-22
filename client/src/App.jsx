@@ -1,55 +1,32 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react"
+import { getProducts } from "./services/productApi"
+import ProductCreateForm from "./components/ProductCreateForm"
+import ProductList from "./components/ProductList"
 
 function App() {
-  const [products, setProducts] = useState([]);
 
-  // codespace
-  // const API = "https://upgraded-space-adventure-967j956r9ggc7qqv-8000.app.github.dev";
+    const [products, setProducts] = useState([])
 
-  // Project IDX
-  const API = "https://8000-firebase-template-1773905411677.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev";
+    const fetchProducts = async () => {
+        const data = await getProducts()
+        setProducts(data)
+    }
 
-  // 처음 렌더링될 때 상품 목록 가져오기
-  useEffect(() => {
-    axios
-      .get(`${API}/products`, { withCredentials: true })
-      .then((res) => {
-        setProducts(res.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+    useEffect(() => {
+        fetchProducts()
+    }, [])
 
-  // 상품 추가
-  const create_product = () => {
-    axios
-      .post(`${API}/products`, {
-        name: "Americano",
-        price: 3000,
-        status: "sale"
-      }, { withCredentials: true })
-      .then((res) => {
-        setProducts((prev) => [...prev, res.data]);
-      })
-      .catch((err) => {
-        console.error(err.response?.data || err);
-      });
-  };
+    return (
+        <div>
 
-  return (
-    <div>
-      <h1>Product list</h1>
-      <button onClick={create_product}>add</button>
+            <h1>키오스크 상품 관리</h1>
 
-      {products.map((p) => (
-        <div key={p.id}>
-          {p.name} - {p.price} - {p.status}
+            <ProductCreateForm refresh={fetchProducts} />
+
+            <ProductList products={products} />
+
         </div>
-      ))}
-    </div>
-  );
+    )
 }
 
-export default App;
+export default App
