@@ -28,6 +28,7 @@ function App() {
       .post(`${API}/products`, {
         name: "Americano",
         price: 3000,
+        status: "sale"
       }, { withCredentials: true })
       .then((res) => {
         setProducts((prev) => [...prev, res.data]);
@@ -44,7 +45,7 @@ function App() {
 
       {products.map((p) => (
         <div key={p.id}>
-          {p.name} - {p.price}
+          {p.name} - {p.price} - {p.status}
         </div>
       ))}
     </div>
