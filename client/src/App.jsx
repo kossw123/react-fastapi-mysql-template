@@ -40,7 +40,6 @@ function App() {
   return (
     <div>
       <h1>Product list</h1>
-
       <button onClick={create_product}>add</button>
 
       {products.map((p) => (
