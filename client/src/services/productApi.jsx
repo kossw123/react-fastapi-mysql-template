@@ -7,10 +7,11 @@ export const getProducts = async () => {
     return res.data
 }
 
-export const createProduct = async (name, price) => {
+export const createProduct = async (name, price, status) => {
     const res = await axios.post(`${API}/products`, {
         name,
-        price
+        price,
+        status
     })
     return res.data
 }
