@@ -1,5 +1,5 @@
 from sqlmodel import create_engine, Session
-from .basesettings import settings
+from .env_config import settings
 
 # codespace
 # DATABASE_URL = "mysql+pymysql://user:password@mysql/testdb"
