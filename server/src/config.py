@@ -5,6 +5,9 @@ from src.database import engine
 from fastapi.middleware.cors import CORSMiddleware
 from src.Product.interface.product_router import router
 
+
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     SQLModel.metadata.create_all(engine)
@@ -22,3 +25,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+
+
