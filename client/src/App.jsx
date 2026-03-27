@@ -1,55 +1,33 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react"
+// import { getProducts } from ".services/productApi"
+import { getProducts } from "./services/productApi"
+import ProductCreateForm from "./components/ProductCreateForm"
+import ProductList from "./components/ProductList"
 
 function App() {
-    const [products, setProducts] = useState([]);
-    
-    // codespace
-    // const API = "https://upgraded-space-adventure-967j956r9ggc7qqv-8000.app.github.dev";
-    
-    // local
-    const API = "http://localhost:8000"
 
-  // 처음 렌더링될 때 상품 목록 가져오기
-  useEffect(() => {
-    axios
-      .get(`${API}/products`)
-      .then((res) => {
-        setProducts(res.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+    const [products, setProducts] = useState([])
 
-  // 상품 추가
-  const create_product = () => {
-    axios
-      .post(`${API}/products`, {
-        name: "Americano",
-        price: 3000,
-      })
-      .then((res) => {
-        setProducts((prev) => [...prev, res.data]);
-      })
-      .catch((err) => {
-        console.error(err.response?.data || err);
-      });
-  };
+    const fetchProducts = async () => {
+        const data = await getProducts()
+        setProducts(data)
+    }
 
-  return (
-    <div>
-      <h1>Product list</h1>
+    useEffect(() => {
+        fetchProducts()
+    }, [])
 
-      <button onClick={create_product}>add</button>
+    return (
+        <div>
 
-      {products.map((p) => (
-        <div key={p.id}>
-          {p.name} - {p.price}
+            <h1>키오스크 상품 관리</h1>
+
+            <ProductCreateForm refresh={fetchProducts} />
+
+            <ProductList products={products} />
+
         </div>
-      ))}
-    </div>
-  );
+    )
 }
 
-export default App;
+export default App
