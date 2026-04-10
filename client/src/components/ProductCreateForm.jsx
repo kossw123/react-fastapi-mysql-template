@@ -11,7 +11,7 @@ function ProductCreateForm({ refresh }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        await createProduct(name, price)
+        await createProduct(name, price, "ACTIVE")
 
         setName("")
         setPrice("")

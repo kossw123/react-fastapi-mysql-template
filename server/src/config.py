@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from sqlmodel import SQLModel
-from src.database import engine
+# from ..infra.database import engine
+from infra.database import engine
 from fastapi.middleware.cors import CORSMiddleware
 from src.Product.interface.product_router import router
-
 
 
 

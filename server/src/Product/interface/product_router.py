@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends
 from sqlmodel import Session
 from src.Product.infra.product_repository import ProductRepository, ProductModel
-from src.database import get_session
+from infra.database import get_session
 
 router = APIRouter(prefix="/products", tags=["products"])
 
