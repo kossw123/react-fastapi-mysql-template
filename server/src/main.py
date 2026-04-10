@@ -1,7 +1,8 @@
-from src.config import app
+from src.config import create_app
 from src.bootstrap import bootstrap
 
 
+app = create_app()
 container = bootstrap()
 
 event_dispatcher = container["eventDispatcher"]

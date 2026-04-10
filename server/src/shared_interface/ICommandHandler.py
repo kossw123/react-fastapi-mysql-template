@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 
-class ICommandHandler():
+class ICommandHandler:
     @abstractmethod
     def handle(self, command):
         pass

@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 
-class IEventHandler():
+class IEventHandler:
     @abstractmethod
     def handle(self, event):
         pass
