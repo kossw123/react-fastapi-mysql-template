@@ -1,5 +1,6 @@
-from src.shared_interface.IEvent import IEvent, IEventHandler
-
+from src.shared_interface.IEvent import IEvent
+from src.shared_interface.IEventHandler import IEventHandler
+from src.Product.infra.product_repository import ProductRepository
 
 # 1. Created
 # 2. Activated
@@ -14,7 +15,7 @@ class ProductCreated(IEvent):
 
 
 class ProductCreatedHandler(IEventHandler):
-    def handle(self, event):
+    def handle(self, event, product_repo: ProductRepository):
         return {"message": f"ProductCreated: {event.id}, {event.name}"}
 
 

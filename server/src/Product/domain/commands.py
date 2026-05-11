@@ -4,7 +4,6 @@ from src.Product.domain.Product import Product
 from src.shared.Repository import Domain_Repository
 from src.shared.UnitOfWork import UnitOfWork
 
-
 class ProductCreate(ICommand):
     def __init__(self, id, name, price):
         self.id = id
@@ -17,10 +16,23 @@ class ProductCreateHandler(ICommandHandler):
         self.repo = repo
         self.uow = uow
 
+    from src.Product.infra.product_model import ProductModel
+
     def handle(self, command: ProductCreate):
         product = Product.create(command.id, command.name, command.price)
+
+        # # Toy
+        # product = ProductModel(
+        #     id = command.id,
+        #     name = command.name,
+        #     price = command.price
+        # )
+
         self.repo.save(product)
         self.uow.register(product)
+
+        # Important!!
+        return product
 
 
 class ProductActivate(ICommand):
@@ -72,3 +84,31 @@ class ProductOutOfStackHandler(ICommandHandler):
         product.outofstack()
         self.repo.save(product)
         self.uow.register(product)
+
+
+
+class Toy_ProductCreate(ICommand):
+    def __init__(self, id, name, price):
+        self.id = id
+        self.name = name
+        self.price = price
+
+
+from src.shared.UnitOfWork import UnitOfWork
+from src.shared.Repository import InMemoryStore
+
+class Toy_ProductCreateHandler(ICommandHandler):
+    # 이런식으로 작성하면 uow같은 그때그때 생성해야하는 임시컨테이너들은
+    # 메모리에 오래 남아있어야 하도록 짜야한다.
+    # 그건 불합리하다.
+    def __init__(self, repo: InMemoryStore):
+        self.repo = repo
+    def handle(self, command: ProductCreate, uow: UnitOfWork):
+        product = Product.create(
+            command.id,
+            command.name,
+            command.price
+        )
+        self.repo.save(product)
+        uow.register(product)
+
