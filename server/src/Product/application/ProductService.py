@@ -24,7 +24,7 @@ class ProductService:
 
     def create_product(self, 
                        product_model: ProductModel, 
-                       uow: UnitOfWork):
+                       uow: UnitOfWork) -> Product:
         phase = _Ochestration(self.bus, self.dispatcher, uow)
         product_id = uuid.uuid4()
         command = ProductCreate(
@@ -49,6 +49,12 @@ class ProductService:
         command = ProductDiscontinue(product_id)
         phase._step1_execute_command(command)
 
+    def update_product(self,
+                       product_id: UUID,
+                       product_data: ProductModel,
+                       uow: UnitOfWork) -> Product:
+        repo = uow.product_repository
+        return repo.update(product_id, product_data) 
 
 class _Ochestration():
     def __init__(self, bus: CommandBus, dispatcher: EventDispatcher, uow: UnitOfWork):

@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field
 from typing import Optional
 from pydantic import ConfigDict

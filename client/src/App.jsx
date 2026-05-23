@@ -1,48 +1,52 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 import {
-    getProducts,
-    deleteProduct
-} from "./services/productApi"
+  getProducts,
+  deleteProduct,
+  updateProduct,
+} from "./services/productApi";
 
-import ProductCreateForm from "./components/ProductCreateForm"
+import ProductCreateForm from "./components/ProductCreateForm";
 
-import ProductList from "./components/ProductList"
+import ProductList from "./components/ProductList";
 
 function App() {
+  const [products, setProducts] = useState([]);
 
-    const [products, setProducts] = useState([])
+  const fetchProducts = async () => {
+    const data = await getProducts();
+    setProducts(data);
+  };
 
-    const fetchProducts = async () => {
-        const data = await getProducts()
-        setProducts(data)
-    }
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-    useEffect(() => {
-        fetchProducts()
-    }, [])
+  const handleDelete = async (productId) => {
+    await deleteProduct(productId);
 
-    /* 추가 */
+    fetchProducts();
+  };
 
-    const handleDelete = async (productId) => {
-        await deleteProduct(productId)
-        fetchProducts()
-    }
+  const handleUpdate = async (productId, updatedData) => {
+    await updateProduct(productId, updatedData);
 
-    return (
-        <div>
+    fetchProducts();
+  };
 
-            <h1>키오스크 상품 관리</h1>
+  return (
+    <div>
+      <h1>키오스크 상품 관리</h1>
 
-            <ProductCreateForm refresh={fetchProducts} />
+      <ProductCreateForm refresh={fetchProducts} />
 
-            <ProductList
-                products={products}
-                onDelete={handleDelete}
-            />
-
-        </div>
-    )
+      <ProductList
+        products={products}
+        onDelete={handleDelete}
+        onUpdate={handleUpdate}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;

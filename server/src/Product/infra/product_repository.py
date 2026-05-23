@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from sqlmodel import select, delete
 from src.Product.infra.product_model import ProductModel
 from src.Product.domain.Product import Product
-
+from sqlalchemy import update
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sqlmodel import Session
@@ -49,6 +49,17 @@ class SqlAlchemy_ProductRepository(IProductRepository):
         statement = delete(ProductModel).where(ProductModel.id == product_id)
         self.session.exec(statement)
 
+    def find_orm(self, 
+                 product_id: UUID) -> ProductModel | None:
+        statement = select(ProductModel).where(ProductModel.id == product_id)
+        orm = self.session.exec(statement).first()
+
+        if orm is None:
+            raise Exception("[SqlAlchemy_ProductRepository.find] session.exec.fist() is null")
+        else:
+            print(f"[SqlAlchemy_ProductRepository.find] FIND PK is {orm.id}")
+        return orm
+
     def get_all(self):
         mapper = _Mapper()
         statement = select(ProductModel)
@@ -57,6 +68,28 @@ class SqlAlchemy_ProductRepository(IProductRepository):
             mapper._to_domain(orm)
             for orm in orms
         ]
+
+    def update(self, 
+               product_id: UUID,
+               product_data: ProductModel):
+        mapper = _Mapper()
+        
+        orm = self.find_orm(product_id)
+        print(f"[product_repository.update] target data : {product_data.name}")
+
+        # Core Update function, InCorrect method
+        # statement = update(ProductModel).where(ProductModel.id == orm.id).values(
+        #     name = product_data.name,
+        #     price = product_data.price
+        # )
+        # self.session.exec(statement)
+
+        orm.name =  product_data.name
+        orm.price = product_data.price
+
+        self.session.flush()
+        self.session.refresh(orm)
+        return mapper._to_domain(orm)
 
     
 class _Mapper():

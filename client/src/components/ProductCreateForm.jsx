@@ -1,5 +1,4 @@
 import { useState } from "react"
-// import { createProduct } from "./services/ProductApi"
 import { createProduct } from "../services/productApi"
 
 

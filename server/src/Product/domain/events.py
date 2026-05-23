@@ -1,6 +1,5 @@
 from src.shared_interface.IEvent import IEvent
 from src.shared_interface.IEventHandler import IEventHandler
-from src.shared.Repository import InMemoryStore
 from typing import TYPE_CHECKING
 
 
