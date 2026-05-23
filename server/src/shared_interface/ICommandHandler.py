@@ -1,6 +1,11 @@
 from abc import abstractmethod
-from src.shared_interface.ICommand import ICommand
-from src.shared.UnitOfWork import UnitOfWork
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from src.shared_interface.ICommand import ICommand
+    from src.shared.UnitOfWork import UnitOfWork
+
 
 class ICommandHandler:
     @abstractmethod

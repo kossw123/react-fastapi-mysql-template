@@ -15,6 +15,12 @@ DATABASE_URL = settings.database_url
 engine = create_engine(DATABASE_URL)
 
 
-def get_session():
+# def get_session():
+#     with Session(engine) as session:
+#         yield session
+
+from src.shared.UnitOfWork import UnitOfWork
+
+def get_uow():
     with Session(engine) as session:
-        yield session
+        yield UnitOfWork(session)

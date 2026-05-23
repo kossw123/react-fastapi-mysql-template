@@ -1,17 +1,21 @@
+from typing import TYPE_CHECKING
 from src.shared.AggregateRoot import AggregateRoot
 from src.Product.domain.events import (
     ProductCreated,
     ProductActivated,
     ProductDiscontinued,
-    ProductOutOfStack
+    ProductOutOfStack,
 )
 from src.Product.domain.ProductStatus import ProductStatus
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class Product:
     def __init__(self, id, name, price):
         self.root = AggregateRoot()
-        self.id: int = id
+        self.id: UUID = id
         self.name: str = name
         self.price: int = price
         self.status: str = ProductStatus.DRAFT
@@ -25,10 +29,14 @@ class Product:
 
         instance = cls(id, name, price)
         instance.root.register(
-            ProductCreated(
-                instance.id, instance.name, instance.price
-            )
+            ProductCreated(instance.id, instance.name, instance.price)
         )
+        return instance
+
+    @classmethod
+    def restore(cls, id, name, price, status):
+        instance = cls(id, name, price)
+        instance.status = status
         return instance
 
     def activate(self):

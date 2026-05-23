@@ -1,6 +1,12 @@
 from src.shared_interface.IEvent import IEvent
 from src.shared_interface.IEventHandler import IEventHandler
-from src.Product.infra.product_repository import ProductRepository
+from src.shared.Repository import InMemoryStore
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from src.shared.UnitOfWork import UnitOfWork
+
 
 # 1. Created
 # 2. Activated
@@ -15,7 +21,7 @@ class ProductCreated(IEvent):
 
 
 class ProductCreatedHandler(IEventHandler):
-    def handle(self, event, product_repo: ProductRepository):
+    def handle(self, event: ProductCreated, uow: UnitOfWork):
         return {"message": f"ProductCreated: {event.id}, {event.name}"}
 
 
@@ -30,13 +36,14 @@ class ProductActivatedHandler(IEventHandler):
 
 
 class ProductDiscontinued(IEvent):
-    def __init__(self, id):
+    def __init__(self, id, name: str):
         self.id = id
+        self.name = name
 
 
 class ProductDiscontinuedHandler(IEventHandler):
-    def handle(self, event):
-        return {"message": f"Product Discontinued : {event.id}"}
+    def handle(self, event: ProductDiscontinued):
+        return {"message": f"Product Discontinued : {event.id}, {event.name}"}
 
 
 class ProductOutOfStack(IEvent):

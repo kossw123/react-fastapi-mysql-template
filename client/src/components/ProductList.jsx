@@ -1,19 +1,22 @@
-import ProductCard from "./ProductCard"
+import ProductCard from "./ProductCard";
 
-function ProductList({ products }) {
+function ProductList({ products, onDelete }) {
+  return (
+    <div>
+      <h2>상품 목록</h2>
 
-    return (
-        <div>
-            <h2>상품 목록</h2>
-
-            <div style={{ display: "flex", flexWrap: "wrap" }}>
-                {products.map((p) => (
-                    <ProductCard key={p.id} product={p} />
-                ))}
-            </div>
-
-        </div>
-    )
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+        }}
+      >
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} onDelete={onDelete} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
-export default ProductList
+export default ProductList;

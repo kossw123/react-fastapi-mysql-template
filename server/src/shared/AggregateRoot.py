@@ -6,7 +6,7 @@ class AggregateRoot:
         self.events = []
 
     def register(self, event: IEvent):
-        self.events.add(event)
+        self.events.append(event)
 
     def pull_events(self):
         events = self.events

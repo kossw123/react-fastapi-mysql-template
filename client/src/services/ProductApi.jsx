@@ -8,10 +8,23 @@ export const getProducts = async () => {
 }
 
 export const createProduct = async (name, price, status) => {
-    const res = await axios.post(`${API}/products`, {
-        name,
-        price,
-        status
-    })
+    const res = await axios.post(
+        `${API}/products`,
+            {
+                name,
+                price,
+                status
+        })
     return res.data
 }
+
+
+export const deleteProduct = async (productId) => {
+    const res = await axios.delete(
+        `${API}/products/${productId}`
+    )
+
+    console.log("[productId:}{productId}")
+
+    return res.data
+} 

@@ -11,6 +11,7 @@ async def lifespan(app: FastAPI):
     SQLModel.metadata.create_all(engine)
     yield
 
+
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.include_router(router)
@@ -27,6 +28,3 @@ def create_app() -> FastAPI:
     )
 
     return app
-
-
-

@@ -6,7 +6,7 @@ from src.Order.domain.events import (
     OrderPaid,
     OrderCancelled,
     OrderShipped,
-    OrderCompleted
+    OrderCompleted,
 )
 from src.Order.domain.OrderItem import OrderItem
 
@@ -99,4 +99,3 @@ class Order:
 
         self.status = OrderStatus.COMPLETED
         self.aggregate_root.register(OrderCompleted(self.id))
-        

@@ -4,7 +4,7 @@ from src.Order.domain.commands import (
     MarkOrderAsPaid,
     CancelOrder,
     ShipOrder,
-    CompleteOrder
+    CompleteOrder,
 )
 from contextlib import contextmanager
 

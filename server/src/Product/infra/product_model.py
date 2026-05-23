@@ -1,10 +1,14 @@
+from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field
 from typing import Optional
 from pydantic import ConfigDict
+from uuid import uuid4, UUID
 
 
 class ProductModel(SQLModel, table=True):
-    id: Optional[int] | None = Field(default=None, primary_key=True)
+    id: UUID = Field(
+        default = uuid4,
+        primary_key=True)
     name: str
     price: int
     status: Optional[str] | None = Field(default=None)

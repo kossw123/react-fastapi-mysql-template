@@ -1,5 +1,9 @@
-from src.shared_interface.IEvent import IEvent
-from src.shared_interface.IEventHandler import IEventHandler
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.shared_interface.IEvent import IEvent
+    from src.shared_interface.IEventHandler import IEventHandler
+    from src.shared.UnitOfWork import UnitOfWork
 
 
 class EventDispatcher:
@@ -11,7 +15,7 @@ class EventDispatcher:
         if handler not in handlers:
             handlers.append(handler)
 
-    def dispatch(self, events):
+    def dispatch(self, events, uow: UnitOfWork = None):
         for event in events:
-            for handler in self.handlers.get(type(event)):
-                handler.handle(event)
+            for handler in self.handlers.get(type(event), []):
+                handler.handle(event, uow)

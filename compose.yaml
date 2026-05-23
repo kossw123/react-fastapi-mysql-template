@@ -6,6 +6,9 @@ services:
       context: ./client
     ports:
       - 3000:3000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
   server:
     container_name: fastapi-server
     build:
