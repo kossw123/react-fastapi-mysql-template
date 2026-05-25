@@ -1,51 +1,18 @@
-import { useEffect, useState } from "react";
+import { Routes, Route } from "react-router-dom";
 
-import {
-  getProducts,
-  deleteProduct,
-  updateProduct,
-} from "./services/productApi";
-
-import ProductCreateForm from "./components/ProductCreateForm";
-
-import ProductList from "./components/ProductList";
+import LoginPage from "./pages/LoginPage";
+import ProductPage from "./pages/ProductPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
-  const [products, setProducts] = useState([]);
-
-  const fetchProducts = async () => {
-    const data = await getProducts();
-    setProducts(data);
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const handleDelete = async (productId) => {
-    await deleteProduct(productId);
-
-    fetchProducts();
-  };
-
-  const handleUpdate = async (productId, updatedData) => {
-    await updateProduct(productId, updatedData);
-
-    fetchProducts();
-  };
-
   return (
-    <div>
-      <h1>키오스크 상품 관리</h1>
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
 
-      <ProductCreateForm refresh={fetchProducts} />
+      <Route path="/products" element={<ProductPage />} />
 
-      <ProductList
-        products={products}
-        onDelete={handleDelete}
-        onUpdate={handleUpdate}
-      />
-    </div>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
 
