@@ -10,7 +10,7 @@ import ProductCreateForm from "../components/ProductCreateForm";
 
 import ProductList from "../components/ProductList";
 
-function App() {
+function ProductPage() {
   const [products, setProducts] = useState([]); 
 
   const fetchProducts = async () => {
@@ -49,4 +49,4 @@ function App() {
   );
 }
 
-export default App;
+export default ProductPage;

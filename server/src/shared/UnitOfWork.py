@@ -1,6 +1,6 @@
 from sqlmodel import Session
 from src.Product.infra.product_repository import SqlAlchemy_ProductRepository
-
+from infra.login.auth_repository import SignUp_Repository
 
 # Request 발생
 # → UoW 생성
@@ -35,3 +35,17 @@ class UnitOfWork:
             events.extend(aggregate.root.pull_events())
 
         return events
+
+
+
+class Auth_UnitOfWork():
+    def __init__(self, session: Session):
+        self.session = session
+        self.auth_repository = SignUp_Repository(session)
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc, tb):
+        if exc_type:
+            self.session.rollback()
+        else:
+            self.session.commit()
