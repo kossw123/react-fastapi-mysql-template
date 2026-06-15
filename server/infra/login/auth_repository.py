@@ -1,42 +1,25 @@
-
-from typing import TYPE_CHECKING
-from abc import ABC, abstractmethod
 from sqlmodel import Session, select
 
-if TYPE_CHECKING:
-    from infra.login.UserModel import UserModel
-    from src.shared.UnitOfWork import UnitOfWork
+from infra.login.models.UserModel import UserModel
 
-
-class IAuthRepository(ABC):
-    @abstractmethod
-    def insert(self, 
-               data: UserModel):
-        pass
-
-
-class SignUp_Repository(IAuthRepository):
-    def __init__(self, 
+class AuthRepository():
+    def __init__(self,
                  session: Session):
         self.session = session
+    def save(self,
+             user: UserModel) -> UserModel:
+        self.session.add(user)
+        self.session.flush()
+        self.session.refresh(user)
 
+        return user
     
-    def save(self, product: Product) -> Product:
-
-        mapper = _Mapper()
-        orm = mapper._to_orm(product)
-        print("[ProductModel PK: ]", orm.id)
-        self.session.add(orm)
-        self.session.flush()
-        self.session.refresh(orm)
-        return product
-
-
-    def insert(self,
-               data: UserModel,
-               uow: UnitOfWork) -> UserModel:
-        orm = data
-        self.session.add(orm)
-        self.session.flush()
-        self.session.refresh(orm)
+    def find_by_name(self,
+                     username: str) -> UserModel:
+        stmt = select(UserModel).where(UserModel.username == username)
+        orm = self.session.exec(stmt).first()
+        
+        if orm is None:
+            return None
+        
         return orm

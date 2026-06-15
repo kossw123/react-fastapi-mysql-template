@@ -1,0 +1,107 @@
+from http import HTTPStatus
+from typing import TYPE_CHECKING
+from infra.login.models.UserModel import UserModel
+from fastapi import HTTPException
+from infra.login.jwt_token import JwtTokenProvider
+from infra.login.password_hasher import PasswordHasher
+from infra.login.models.UserModel import UserModel
+from uuid import UUID, uuid4
+if TYPE_CHECKING:
+    from src.shared.UnitOfWork import UnitOfWork
+    from infra.login.models.LoginRequest import LoginRequest
+    from infra.login.models.SignUpRequest import SignUpRequest
+    from infra.login.models.UserRequest import UserRequest
+    from infra.login.models.UserResponse import UserResponse
+
+class AuthService():
+    def __init__(self):
+        self.token_provider = JwtTokenProvider()
+        self.password_hasher = PasswordHasher()        
+
+    def create_account(self, 
+                       username: str,
+                       email: str,
+                       password: str,
+                       uow: UnitOfWork) -> UserModel:
+        
+        user_model = _Mapper()._to_usermodel(self.password_hasher, username, email, password)
+
+        with uow:
+            existing_user = uow.auth_repository.find_by_name(username)
+
+            if existing_user:
+                raise HTTPException(
+                    status_code=409,
+                    detail="이미 가입된 회원입니다."
+                )
+            uow.auth_repository.save(user_model)
+
+        return user_model
+
+    def login(self,
+                     user: LoginRequest,
+                     uow: UnitOfWork):
+            with uow:
+                account = uow.auth_repository.find_by_name(user.username)
+
+            if account is None:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid username"
+                )
+            
+            if self.password_hasher.verify(
+                                        user.password, 
+                                        account.password) is False:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Not verify password"
+                )
+            
+            access_token = self.token_provider.create_access_token(account.username)
+            
+            return {
+                "token": access_token,
+                "bearer": "bearer",
+            }
+    
+    def find_user(self,
+                  user: UserRequest,
+                  uow: UnitOfWork) -> UserResponse:
+
+        if user.username is None:
+            raise HTTPException(
+                status_code="400",
+                detail="not input username"
+            )
+
+        account = uow.auth_repository.find_by_name(user.username)
+
+        if account is None:
+            raise HTTPException(
+                status_code="401",
+                detail="not found user"
+            ) 
+
+        return _Mapper()._to_userresponse(user)
+
+
+class _Mapper():
+    def _to_usermodel(self,
+                      hasher: PasswordHasher,
+                      username: str,
+                      email: str,
+                      password: str) -> UserModel:
+        id: UUID = uuid4()
+        return UserModel(
+            id = id,
+            username = username,
+            email =  email,
+            password = hasher.hash(password)
+        )
+    
+    def _to_userresponse(self,
+                        user: UserRequest) -> UserResponse:
+        return UserResponse(
+            user.username
+        )

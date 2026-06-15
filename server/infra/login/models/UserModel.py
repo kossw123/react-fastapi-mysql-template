@@ -10,4 +10,4 @@ class UserModel(SQLModel, table=True):
     email: str 
     password: str
 
-    model_config = ConfigDict(strict=True)
+    model_config = ConfigDict(strict=True) 

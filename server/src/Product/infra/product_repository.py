@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from sqlmodel import select, delete
 from src.Product.infra.product_model import ProductModel
 from src.Product.domain.Product import Product
-from sqlalchemy import update
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sqlmodel import Session
@@ -44,6 +43,12 @@ class SqlAlchemy_ProductRepository(IProductRepository):
             print(f"[SqlAlchemy_ProductRepository.find] FIND PK is {orm.id}")
             product = mapper._to_domain(orm)
         return product
+    
+    def find_by_name(self, 
+                     product_name: str) -> Product | None:
+        stmt = select(ProductModel).where(ProductModel.name == product_name)
+        return self.session.exec(stmt).first()
+
 
     def delete(self, product_id: UUID):
         statement = delete(ProductModel).where(ProductModel.id == product_id)

@@ -2,15 +2,28 @@ import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
-import ProductPage from "./pages/ProductPage";
+import ProductManagementPage from "./pages/ProductManagementPage";
 import SignUpPage from "./pages/SignUpPage";
+import KioskPage from "./pages/KioskPage";
+import PaymentPage from "./pages/PaymentPage";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/productpage" element={<ProductPage />} />
-      <Route path="/SignupPage" element={<SignUpPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route
+          path="/productmanagementpage"
+          element={<ProductManagementPage />}
+        />
+        <Route path="/paymentpage" element={<PaymentPage />} />
+        <Route path="/signuppage" element={<SignUpPage />} />
+        <Route path="/kioskpage" element={<KioskPage />} />
+      </Route>
     </Routes>
   );
 }

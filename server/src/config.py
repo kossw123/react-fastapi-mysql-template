@@ -3,7 +3,9 @@ from contextlib import asynccontextmanager
 from sqlmodel import SQLModel
 from infra.database import engine
 from fastapi.middleware.cors import CORSMiddleware
+from src.Order.interface.order_router import order_router
 from src.Product.interface.product_router import router
+from infra.login.login_router import auth_router
 
 
 @asynccontextmanager
@@ -15,6 +17,8 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.include_router(router)
+    app.include_router(auth_router)
+    app.include_router(order_router)
 
     app.add_middleware(
         CORSMiddleware,

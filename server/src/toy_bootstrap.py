@@ -9,16 +9,36 @@ from src.Product.domain.events import (
     ProductDiscontinuedHandler
 )
 
+
+from src.Order.domain.commands import (
+    OrderCreate, OrderCreateHandler
+)
+from src.Order.domain.events import (
+    OrderCreated, OrderCreatedHandler
+)
+
+
 event_dispatcher = EventDispatcher()
 command_bus = CommandBus()
 
+
 # CommandBus add
+## Product
 command_bus.register(ProductCreate, ProductCreateHandler())
 command_bus.register(ProductDiscontinue, ProductDiscontinueHandler())
+## Order
+command_bus.register(OrderCreate, OrderCreateHandler())
+
+
 
 # EventDispatcher add
+## Product
 event_dispatcher.register(ProductCreated, ProductCreatedHandler())
 event_dispatcher.register(ProductDiscontinuedHandler, ProductDiscontinuedHandler())
+
+## Order
+event_dispatcher.register(OrderCreated, OrderCreatedHandler())
+
 
 container = {
     "EVENT_DISPATCHER": event_dispatcher,

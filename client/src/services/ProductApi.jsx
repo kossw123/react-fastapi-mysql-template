@@ -18,13 +18,10 @@ export const createProduct = async (name, price, status) => {
 
 export const deleteProduct = async (productId) => {
   const res = await axios.delete(`${API}/products/${productId}`);
-
-
   return res.data;
 };
 
 export const updateProduct = async (productId, updatedData) => {
   const res = await axios.put(`${API}/products/${productId}`, updatedData);
-  
   return res.data;
 };

@@ -1,53 +1,62 @@
 from src.Order.domain.commands import (
-    CreateOrder,
-    RequestPayment,
-    MarkOrderAsPaid,
-    CancelOrder,
-    ShipOrder,
-    CompleteOrder,
+    OrderCreate
 )
+from src.Order.infra.models.OrderResponse import OrderResponse
 from contextlib import contextmanager
+from typing import TYPE_CHECKING
+from src.Order.infra.models.OrderItemResponse import OrderItemResponse
+
+if TYPE_CHECKING:
+    from src.shared.CommandBus import CommandBus
+    from src.shared.EventDispatcher import EventDispatcher
+    from src.shared.UnitOfWork import UnitOfWork
+    from src.Order.infra.models.OrderRequest import OrderRequest
+    from src.Order.domain.Order import Order
 
 
 class OrderService:
-    def __init__(self, command_bus, dispatcher, uow):
-        self.command_bus = command_bus
+    def __init__(self, 
+                 command_bus: CommandBus, 
+                 dispatcher: EventDispatcher, 
+                 uow: UnitOfWork):
+        self.bus = command_bus
         self.dispatcher = dispatcher
         self.uow = uow
 
-    def create_order(self, order_id, customer_id, items):
-        with self.command_context():
-            self.command_bus.dispatch(CreateOrder(order_id, customer_id, items))
+    def create_order(self, 
+                    request: OrderRequest):
+        command = OrderCreate(request)
 
-    def request_payment(self, order_id):
-        with self.command_context():
-            self.command_bus.dispatch(RequestPayment(order_id))
+        with self._command_context():
+            order = self.bus.dispatch(command, self.uow)
+        return self._to_OrderResponse(order)
 
-    def mark_as_paid(self, order_id):
-        with self.command_context():
-            self.command_bus.dispatch(MarkOrderAsPaid(order_id))
 
-    def cancel_order(self, order_id):
-        with self.command_context():
-            self.command_bus.dispatch(CancelOrder(order_id))
-
-    def ship_order(self, order_id):
-        with self.command_context():
-            self.command_bus.dispatch(ShipOrder(order_id))
-
-    def complete_order(self, order_id):
-        with self.command_context():
-            self.command_bus.dispatch(CompleteOrder(order_id))
+    @contextmanager
+    def _command_context(self):
+        with self.uow:
+            yield
+        self._publish_events()
 
     def _publish_events(self):
         while True:
-            events = self.uow.collect_events()
+            events = self.uow.collect_event()
             if not events:
                 break
             self.dispatcher.dispatch(events)
 
-    @contextmanager
-    def command_context(self):
-        with self.uow:
-            yield
-        self._publish_events()
+
+    def _to_OrderResponse(self, order):
+        return OrderResponse(
+            order_id=order.order_id,
+            customer_id=order.customer_id,
+            items=[
+                OrderItemResponse(
+                    id=item.product_id,
+                    name=item.name,
+                    price=item.price,
+                    quantity=item.quantity,
+                )
+                for item in order.items
+            ]
+        )

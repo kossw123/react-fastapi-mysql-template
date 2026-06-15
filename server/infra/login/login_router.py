@@ -1,37 +1,52 @@
 from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends
-from infra.database import get_auth_uow
-from infra.login.UserModel import UserModel
-from src.shared.UnitOfWork import Auth_UnitOfWork
-from src.toy_bootstrap import auth_container
-from uuid import UUID
+from infra.database import get_uow
+from infra.login.AuthService import AuthService
+from infra.login.models.LoginRequest import LoginRequest
+from infra.login.models.SignUpRequest import SignUpRequest
 
-router = APIRouter(prefix="", tags={"login"})
+if TYPE_CHECKING:
+    from src.shared.UnitOfWork import UnitOfWork
 
 
-# def create_product(product: ProductModel, uow: UnitOfWork = Depends(get_uow)):
-#     bus = container["COMMAND_BUS"]
-#     dispatcher = container["EVENT_DISPATCHER"]
-#     service = ProductService(bus, dispatcher)
-
-#     with uow:
-#         result = service.create_product(product, uow)
-#     return _to_response(result)
-
+auth_router = APIRouter(prefix="/auth", tags=["login"])
 
 # Sign up
-@router.post("/signup", response_model=UserModel)
-def sign_up(data: UserModel, 
-            uow: Auth_UnitOfWork = Depends(get_auth_uow)):
-    repo = auth_container["SIGNUP_REPOSITORY"]
-    with uow:
-        repo.insert(data) 
-    res = {
-        "id": data.id,
-        "name": data.name
-    }
-    return res
+@auth_router.post("/signup")
+def sign_up(request: SignUpRequest, 
+            uow: UnitOfWork = Depends(get_uow)):
+
+    service = AuthService()
+    service.create_account(request.username, 
+                           request.email, 
+                           request.password, 
+                           uow)
 
 
-# login
-# @router.post("/", response_model=LoginModel)
+# Login
+@auth_router.post("/login")
+def login(login_data: LoginRequest,
+          uow: UnitOfWork = Depends(get_uow)):
+    service = AuthService()
+    return service.login(login_data, uow)
+
+
+# Logout
+# @auth_router.get("/logout")
+# def logout():
+
+from infra.login.models.UserRequest import UserRequest
+
+@auth_router.post("/getuser")
+def get_current_user(target_data: UserRequest,
+                     uow: UnitOfWork = Depends(get_uow)):
+    service = AuthService()
+    return service.find_user(target_data, uow)
+
+
+
+# 1. 로그인 성공 시 JWT 발급
+# 2. localStorage에 저장 
+# # 3. ProductedRoute 추가
+# 4. 로그아웃 시 토큰 삭제 + 로그인 페이지 이동
+# 5. FastAPI에 /auth/logout 추가

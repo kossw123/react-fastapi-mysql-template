@@ -1,5 +1,18 @@
 import { useState } from "react";
 
+import {
+  Card,
+  TopSection,
+  ProductInfo,
+  ProductName,
+  ProductPrice,
+  StatusBadge,
+  ButtonGroup,
+  UpdateButton,
+  DeleteButton,
+  EditInput,
+} from "./styles/ProductCardStyle";
+
 function ProductCard({ product, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -18,186 +31,52 @@ function ProductCard({ product, onDelete, onUpdate }) {
   };
 
   return (
-    <div
-      style={{
-        position: "relative",
+    <Card>
+      <TopSection>
+        <ProductInfo>
+          {isEditing ? (
+            <>
+              <EditInput
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="상품 이름"
+              />
 
-        border: "2px solid #dcdcdc",
+              <EditInput
+                type="number"
+                value={editPrice}
+                onChange={(e) => setEditPrice(e.target.value)}
+                placeholder="가격"
+              />
+            </>
+          ) : (
+            <>
+              <ProductName>☕ {product.name}</ProductName>
 
-        borderRadius: "16px",
+              <ProductPrice>가격 : {product.price}원</ProductPrice>
+            </>
+          )}
 
-        padding: "20px",
+          <StatusBadge status={product.status}>{product.status}</StatusBadge>
+        </ProductInfo>
 
-        paddingBottom: isEditing ? "70px" : "20px",
-
-        margin: "15px",
-
-        width: "300px",
-
-        backgroundColor: "#ffffff",
-
-        boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-
-        transition: "0.2s",
-      }}
-    >
-      {/* Delete 버튼 */}
-      <button
-        onClick={() => onDelete(product.id)}
-        style={{
-          position: "absolute",
-
-          top: isEditing ? "auto" : "12px",
-
-          bottom: isEditing ? "12px" : "auto",
-
-          right: "12px",
-
-          width: "32px",
-
-          height: "32px",
-
-          border: "none",
-
-          borderRadius: "50%",
-
-          backgroundColor: "#ff4d4f",
-
-          color: "white",
-
-          fontWeight: "bold",
-
-          cursor: "pointer",
-
-          fontSize: "14px",
-          
-          display: "flex",
-          
-          alignItems: "center",
-          
-          justifyContent: "center",
-        }}
-      >
-        X
-      </button>
-
-      {/* Update / Save 버튼 */}
-      <button
-        onClick={() => {
-          if (isEditing) {
-            handleUpdate();
-          } else {
-            setIsEditing(true);
-          }
-        }}
-        style={{
-          position: "absolute",
-
-          top: isEditing ? "auto" : "12px",
-
-          bottom: isEditing ? "12px" : "auto",
-
-          right: "56px",
-
-          width: isEditing ? "60px" : "72px",
-
-          height: "32px",
-
-          border: "none",
-
-          borderRadius: "8px",
-
-          backgroundColor: "#1677ff",
-
-          color: "white",
-
-          fontWeight: "bold",
-
-          cursor: "pointer",
-
-          fontSize: "12px",
-        }}
-      >
-        {isEditing ? "Save" : "Update"}
-      </button>
-
-      {/* 수정 모드 */}
-      {isEditing ? (
-        <>
-          <input
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            style={{
-              width: "100%",
-
-              marginBottom: "12px",
-
-              padding: "8px",
-
-              boxSizing: "border-box",
-
-              border: "1px solid #d9d9d9",
-
-              borderRadius: "8px",
-            }}
-          />
-
-          <input
-            type="number"
-            value={editPrice}
-            onChange={(e) => setEditPrice(e.target.value)}
-            style={{
-              width: "100%",
-
-              marginBottom: "12px",
-
-              padding: "8px",
-
-              boxSizing: "border-box",
-
-              border: "1px solid #d9d9d9",
-
-              borderRadius: "8px",
-            }}
-          />
-        </>
-      ) : (
-        <>
-          <h3
-            style={{
-              marginBottom: "16px",
-
-              fontSize: "22px",
-
-              paddingRight: "120px",
+        <ButtonGroup>
+          <UpdateButton
+            onClick={() => {
+              if (isEditing) {
+                handleUpdate();
+              } else {
+                setIsEditing(true);
+              }
             }}
           >
-            {product.name}
-          </h3>
+            {isEditing ? "저장" : "수정"}
+          </UpdateButton>
 
-          <p
-            style={{
-              fontSize: "16px",
-            }}
-          >
-            가격 : {product.price}
-          </p>
-        </>
-      )}
-
-      {/* 상태 */}
-      <p
-        style={{
-          color: product.status === "ACTIVE" ? "green" : "gray",
-
-          fontWeight: "bold",
-
-          marginTop: "12px",
-        }}
-      >
-        상태 : {product.status}
-      </p>
-    </div>
+          <DeleteButton onClick={() => onDelete(product.id)}>✕</DeleteButton>
+        </ButtonGroup>
+      </TopSection>
+    </Card>
   );
 }
 

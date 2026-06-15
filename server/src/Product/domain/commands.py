@@ -24,8 +24,9 @@ class ProductCreateHandler(ICommandHandler):
                uow: UnitOfWork):
         product = Product.create(command.id, command.name, command.price)
         print("[COMMAND: ProductCreateHandler]: product info = ", product.id, "+", product.name)
-        uow.product_repository.save(product)
-        uow.domain_register(product)
+        with uow:
+            uow.product_repository.save(product)
+            uow.domain_register(product)
         return product
     
 

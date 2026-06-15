@@ -1,9 +1,6 @@
 from sqlmodel import create_engine, Session
 from .env_settings import settings
-from src.shared.UnitOfWork import (
-    UnitOfWork,
-    Auth_UnitOfWork
-)
+from src.shared.UnitOfWork import UnitOfWork
 
 # e.g
 # DATABASE_URL = mysql+pymysql://<username>:<password>@<host>:<port>/<database>
@@ -21,6 +18,4 @@ def get_uow():
     with Session(engine) as session:
         yield UnitOfWork(session)
 
-def get_auth_uow():
-    with Session(engine) as session:
-        yield Auth_UnitOfWork(session)
+        
