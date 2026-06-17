@@ -25,6 +25,11 @@ function LoginPage() {
     e.preventDefault();
     try {
       isSetLoading(true);
+
+      if (isLoading == false) {
+        setError("로그인 중 입니다.");
+      }
+
       if (!username.trim() || !password.trim()) {
         setError("필요한 정보를 입력 해주세요.");
         return;

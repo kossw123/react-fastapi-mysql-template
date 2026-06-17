@@ -1,9 +1,7 @@
-import axios from "axios";
-
-const API = "http://localhost:8000/order";
+import axiosinstance from "./axiosInstance";
 
 export const ordering = async (items) => {
-  const res = await axios.post(`${API}/ordering`, {
+  const res = await axiosinstance.post(`/ordering`, {
     items: items,
   });
 

@@ -1,14 +1,13 @@
-import axios from "axios";
+import axiosinstance from "./axiosInstance";
 
-const API = "http://localhost:8000";
 
 export const getProducts = async () => {
-  const res = await axios.get(`${API}/products`);
+  const res = await axiosinstance.get(`/products`);
   return res.data;
 };
 
 export const createProduct = async (name, price, status) => {
-  const res = await axios.post(`${API}/products`, {
+  const res = await axiosinstance.post(`/products`, {
     name,
     price,
     status,
@@ -17,11 +16,11 @@ export const createProduct = async (name, price, status) => {
 };
 
 export const deleteProduct = async (productId) => {
-  const res = await axios.delete(`${API}/products/${productId}`);
+  const res = await axiosinstance.delete(`/products/${productId}`);
   return res.data;
 };
 
 export const updateProduct = async (productId, updatedData) => {
-  const res = await axios.put(`${API}/products/${productId}`, updatedData);
+  const res = await axiosinstance.put(`/products/${productId}`, updatedData);
   return res.data;
 };

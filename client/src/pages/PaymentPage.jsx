@@ -29,7 +29,7 @@ import useAuthStore from "../zustand_store/AuthStore";
 
 function PaymentPage() {
   const navigate = useNavigate();
-  const logoutAction = useAuthStore((state) => state.logtout);
+  const logoutAction = useAuthStore((state) => state.logout);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [savePoint, setSavePoint] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -60,7 +60,8 @@ function PaymentPage() {
       return;
     }
 
-    alert("결제가 완료되었습니다.");
+      alert("결제가 완료되었습니다.");
+      console.log(logoutAction);
     logoutAction();
     navigate("/");
   };

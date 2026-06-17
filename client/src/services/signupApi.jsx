@@ -1,10 +1,8 @@
-import axios from "axios";
-
-const API = "http://localhost:8000/auth";
+import axiosinstance from "./axiosInstance";
 
 export const signup = async (username, email, password) => {
-  return await axios
-    .post(`${API}/signup`, {
+  return await axiosinstance
+    .post(`/signup`, {
       username: username,
       email: email,
       password: password,

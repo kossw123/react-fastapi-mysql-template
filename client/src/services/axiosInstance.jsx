@@ -40,6 +40,7 @@ axiosinstance.interceptors.response.use(
 
       useAuthStore.getState().logout();
       window.location.href = "/";
+      return new Promise(() => {});
     }
 
     return Promise.reject(error);
