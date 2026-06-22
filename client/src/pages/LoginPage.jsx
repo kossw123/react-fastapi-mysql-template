@@ -41,7 +41,7 @@ function LoginPage() {
       const token = response.token;
 
       if (!payload || !token) {
-        throw new Error();
+        throw new Error("페이로드나 토큰이 없습니다.");
       }
 
       loginAction(payload, token);
@@ -49,6 +49,9 @@ function LoginPage() {
       setError("");
       navigate("/kioskpage");
     } catch (err) {
+      console.log(err);
+      console.log(err.response);
+
       if (err.response?.status === 401) {
         setError("아이디 또는 비밀번호가 틀렸습니다.");
       } else {

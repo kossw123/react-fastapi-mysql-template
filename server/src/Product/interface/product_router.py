@@ -6,12 +6,15 @@ from src.Product.infra.product_repository import ProductModel
 from src.shared.UnitOfWork import UnitOfWork
 from src.toy_bootstrap import container
 from uuid import UUID
-
+from infra.database import verify_access_token
+from fastapi import Depends
 
 if TYPE_CHECKING:
     from src.Product.domain.Product import Product
 
-router = APIRouter(prefix="/products", tags=["products"])
+router = APIRouter(prefix="/products", tags=["products"], dependencies=[
+    Depends(verify_access_token)
+])
 
 
 @router.get("/", response_model=list[ProductModel])
@@ -19,11 +22,6 @@ def read_products(uow: UnitOfWork = Depends(get_uow)):
     return uow.product_repository.get_all()
 
 
-# const res = await axios.post(`${API}/products`, {
-#     name,
-#     price,
-#     status,
-#   });
 @router.post("/", response_model=ProductModel)
 # fastapi는 들어온 데이터를 자동으로 파싱해준다.
 # fastapi는 함수 시그니처를 보고 타입힌트가 있는 경우, 타입 힌트를 규칙으로 사용해서 강제 파싱을 해준다.

@@ -6,12 +6,14 @@ from infra.login.jwt_token import JwtTokenProvider
 from infra.login.password_hasher import PasswordHasher
 from infra.login.models.UserModel import UserModel
 from uuid import UUID, uuid4
+from datetime import datetime, timedelta
 if TYPE_CHECKING:
     from src.shared.UnitOfWork import UnitOfWork
     from infra.login.models.LoginRequest import LoginRequest
     from infra.login.models.SignUpRequest import SignUpRequest
     from infra.login.models.UserRequest import UserRequest
     from infra.login.models.UserResponse import UserResponse
+    from fastapi import Response
 
 class AuthService():
     def __init__(self):
@@ -40,7 +42,9 @@ class AuthService():
 
     def login(self,
                      user: LoginRequest,
+                     response: Response,
                      uow: UnitOfWork):
+        
             with uow:
                 account = uow.auth_repository.find_by_name(user.username)
 
@@ -58,12 +62,22 @@ class AuthService():
                     detail="Not verify password"
                 )
             
-            access_token = self.token_provider.create_access_token(account.username)
-            
+            access_token = self.token_provider.create_access_token(account.username, expire_delta=timedelta(seconds=30))
+            refresh_token = self.token_provider.create_refresh_toekn(account.username, expire_delta=timedelta(minutes=2))
+
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                secure=False,    # secure=True는 HTTPS 환경에서만 킨다. HTTPS 환경이 아니면 쿠키를 가차없이 버린다는 설정이다.
+                samesite="lax"
+            )
+
             return {
                 "token": access_token,
                 "bearer": "bearer",
             }
+                
     
     def find_user(self,
                   user: UserRequest,
@@ -84,6 +98,19 @@ class AuthService():
             ) 
 
         return _Mapper()._to_userresponse(user)
+
+    def refresh(self,
+                               token: str):
+        print("AUTHSERVICE REFRESH CALL")
+        payload = self.token_provider.validate_refresh_token(token)
+
+        username= payload["username"]
+        
+        access_token = self.token_provider.create_access_token(username, expire_delta=timedelta(seconds=30))
+        return {
+            "token": access_token,
+            "bearer": "bearer",
+        }
 
 
 class _Mapper():
