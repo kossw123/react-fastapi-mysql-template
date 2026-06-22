@@ -4,15 +4,13 @@ import { useNavigate } from "react-router-dom";
 import {
   Container,
   Header,
+  HeaderRight,
   Title,
   ProductSection,
   ProductGrid,
   ProductCard,
   ProductName,
   ProductPrice,
-  OrderBar,
-  OrderInfo,
-  OrderButton,
   ManagementButton,
 } from "./styles/KioskPageStyle";
 
@@ -21,12 +19,14 @@ import { ordering } from "../services/orderApi";
 
 import OrderPanel from "../components/OrderPanel";
 import useOrderStore from "../zustand_store/OrderStore";
+import useAuthStore from "../zustand_store/AuthStore"; // 추가
 
 function KioskPage() {
   const navigate = useNavigate();
   const setOrder = useOrderStore((state) => state.setOrder);
-  const [orderItems, setOrderItems] = useState([]);
+  const logout = useAuthStore((state) => state.logout); // 추가
 
+  const [orderItems, setOrderItems] = useState([]);
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -44,10 +44,7 @@ function KioskPage() {
       if (existingItem) {
         return prev.map((item) =>
           item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
+            ? { ...item, quantity: item.quantity + 1 }
             : item,
         );
       }
@@ -67,12 +64,7 @@ function KioskPage() {
   const increaseQuantity = (productId) => {
     setOrderItems((prev) =>
       prev.map((item) =>
-        item.id === productId
-          ? {
-              ...item,
-              quantity: item.quantity + 1,
-            }
-          : item,
+        item.id === productId ? { ...item, quantity: item.quantity + 1 } : item,
       ),
     );
   };
@@ -82,10 +74,7 @@ function KioskPage() {
       prev
         .map((item) =>
           item.id === productId
-            ? {
-                ...item,
-                quantity: item.quantity - 1,
-              }
+            ? { ...item, quantity: item.quantity - 1 }
             : item,
         )
         .filter((item) => item.quantity > 0),
@@ -107,14 +96,23 @@ function KioskPage() {
     }
   };
 
+  const logoutHandle = () => {
+    logout(); // zustand 상태 초기화
+    navigate("/"); // 로그인 페이지로 이동
+  };
+
   return (
     <Container>
       <Header>
         <Title>☕ CAFE KIOSK</Title>
 
-        <ManagementButton onClick={() => navigate("/productmanagementpage")}>
-          상품 관리
-        </ManagementButton>
+        <HeaderRight>
+          <ManagementButton onClick={() => navigate("/productmanagementpage")}>
+            상품 관리
+          </ManagementButton>
+
+          <ManagementButton onClick={logoutHandle}>로그아웃</ManagementButton>
+        </HeaderRight>
       </Header>
 
       <ProductSection>
@@ -122,7 +120,6 @@ function KioskPage() {
           {products.map((product) => (
             <ProductCard key={product.id} onClick={() => submitHandle(product)}>
               <ProductName>{product.name}</ProductName>
-
               <ProductPrice>{product.price.toLocaleString()}원</ProductPrice>
             </ProductCard>
           ))}

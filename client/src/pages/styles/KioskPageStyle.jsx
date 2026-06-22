@@ -6,17 +6,21 @@ export const Container = styled.div`
 `;
 
 export const Header = styled.header`
-  position: relative;
-
   height: 80px;
 
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 
   background: #ffffff;
-
   border-bottom: 1px solid #ececec;
+
+  padding: 0 24px;
+`;
+export const HeaderRight = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
 `;
 
 export const Title = styled.h1`
@@ -122,10 +126,6 @@ export const OrderButton = styled.button`
 `;
 
 export const ManagementButton = styled.button`
-  position: absolute;
-
-  right: 24px;
-
   height: 42px;
 
   padding: 0 16px;
@@ -135,11 +135,9 @@ export const ManagementButton = styled.button`
   border-radius: 10px;
 
   background: #2f2f2f;
-
   color: white;
 
   font-size: 14px;
-
   font-weight: 600;
 
   cursor: pointer;

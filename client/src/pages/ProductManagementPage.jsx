@@ -23,10 +23,11 @@ import {
   Card,
   LogoutButton,
 } from "./styles/ProductPageStyle";
+import useAuthStore from "../zustand_store/AuthStore";
 
 function ProductPage() {
   const navigate = useNavigate();
-
+  const logoutAction = useAuthStore((state) => state.logout);
   const [products, setProducts] = useState([]);
 
   const fetchProducts = async () => {
@@ -39,8 +40,7 @@ function ProductPage() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-
+    logoutAction();
     navigate("/");
   };
 
