@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field
 from pydantic import ConfigDict
-from uuid import uuid4, UUID
+from uuid import UUID
 from typing import Optional
 
 class OrderItemModel(SQLModel, table=True):
@@ -12,3 +12,6 @@ class OrderItemModel(SQLModel, table=True):
     price: int
     quantity: int
     model_config = ConfigDict(strict=True)
+
+
+

@@ -4,7 +4,7 @@ from src.Order.domain.events import (
     OrderCreated
 )
 from src.Order.domain.OrderItem import OrderItem
-from uuid import UUID, uuid4
+from uuid import UUID
 
 class Order:
     def __init__(self, 

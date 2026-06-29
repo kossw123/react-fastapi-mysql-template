@@ -6,7 +6,7 @@ from src.Order.domain.Order import Order
 from src.Order.domain.OrderItem import OrderItem
 from src.shared_interface.ICommand import ICommand
 from src.shared_interface.ICommandHandler import ICommandHandler
-from uuid import UUID, uuid4
+from uuid import uuid4
 from src.Order.infra.models.OrderRequest import OrderRequest
 from typing import TYPE_CHECKING
 

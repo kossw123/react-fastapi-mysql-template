@@ -24,6 +24,9 @@ function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      console.log(
+        "[클라이언트] LoginPage.jsx, handleLogin().login(), 로그인 핸들러 진입",
+      );
       isSetLoading(true);
 
       if (isLoading == false) {
@@ -35,7 +38,13 @@ function LoginPage() {
         return;
       }
 
+      console.log(
+        "[클라이언트] LoginPage.jsx, handleLogin().login(), login axios 요청",
+      );
       const response = await login(username, password);
+      console.log(
+        "[클라이언트] LoginPage.jsx, handleLogin().login(), login axios 결과 반환",
+      );
 
       const payload = jwtDecode(response.token).username;
       const token = response.token;
@@ -44,9 +53,15 @@ function LoginPage() {
         throw new Error("페이로드나 토큰이 없습니다.");
       }
 
+      console.log(
+        "[클라이언트] LoginPage.jsx, handleLogin().login(), zustand store의 login 요청",
+      );
       loginAction(payload, token);
 
       setError("");
+      console.log(
+        "[클라이언트] LoginPage.jsx, handleLogin().login(), kiosk 이동",
+      );
       navigate("/kioskpage");
     } catch (err) {
       console.log(err);

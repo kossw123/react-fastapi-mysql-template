@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field
 from pydantic import ConfigDict
-from uuid import uuid4, UUID
+from uuid import UUID
 
 class OrderModel(SQLModel, table=True):
     id: int = Field(default=None,

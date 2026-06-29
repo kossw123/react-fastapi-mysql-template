@@ -7,7 +7,6 @@ from src.shared.UnitOfWork import UnitOfWork
 from src.toy_bootstrap import container
 from uuid import UUID
 from infra.database import verify_access_token
-from fastapi import Depends
 
 if TYPE_CHECKING:
     from src.Product.domain.Product import Product

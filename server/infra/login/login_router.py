@@ -1,15 +1,16 @@
 from typing import TYPE_CHECKING
-from fastapi import APIRouter, Depends, Request, Response, HTTPException
+from fastapi import APIRouter, Depends, Request, Response
+from fastapi.security import OAuth2PasswordBearer
 from infra.database import get_uow
 from infra.login.AuthService import AuthService
 from infra.login.models.LoginRequest import LoginRequest
 from infra.login.models.SignUpRequest import SignUpRequest
-from http import HTTPStatus
 if TYPE_CHECKING:
     from src.shared.UnitOfWork import UnitOfWork
 
 
 auth_router = APIRouter(prefix="/auth", tags=["login"])
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # Sign up
 @auth_router.post("/signup")
@@ -55,10 +56,15 @@ def get_current_user(target_data: UserRequest,
 
 
 @auth_router.post("/refresh")
-def refresh_access_token(request: Request, 
-                         response: Response):
+def refresh_access_token(request: Request):
     print("ROUTER REFRESH CALL")
     refresh_token = request.cookies.get("refresh_token")
     
     service = AuthService()
-    return service.refresh(refresh_token)
+    service.refresh(refresh_token)
+
+
+@auth_router.post("/logout")
+def logout(token: str = Depends(oauth2_scheme)):
+    service = AuthService()
+    service.logout(token)

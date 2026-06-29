@@ -1,0 +1,150 @@
+01. login, call flow
+
+######## login 인증 흐름 추적
+
+## LoginPage.jsx
+
+1단계: submit 후 handleLogin() 내부 login() 실행
+
+## loginApi.jsx
+
+2단계: login()은 axiosInstance.post("/auth/login")를 실행
+    - request body summary
+		- "username": username
+		- "password": password
+
+##  axiosInstance.jsx
+
+3단계: await login 인자를 axiosInstance를 통해 백엔드 전송 전 가공
+    - axios instance config summary
+        - BaseURL: ”http://localhost:8000"
+        - timeout: 5000 
+        - withCredentials: true 
+
+## 이 부분에 Axios instacne가 실행되는 시점을 추가
+
+4단계: Request interceptor는 zustand store에서 token을 조회
+	- token이 존재할 경우 Header에 Authoization 추가
+	- token없다면 그대로 서버에 요청한다.
+
+## loginApi.jsx
+
+5단계: login()을 통해 post 방식으로 웹 서버로 전송
+	- username
+	- password
+
+## login_router.py
+
+6단계: API Router를 통해 변환된 요청 메서드(post)와 같은 login handler 매칭
+	- param summary
+		- prefix: "/auth"
+		- tags: ["login"]  // swagger 태그
+
+
+7단계: 받아온 요청 본문을 토대로 pydantic은 형태가 맞는지 검증, 변환
+	- 다음과 같은 형태를 가진다.
+		- username: str,
+		- password: str
+
+?? 굳이 LoginRequest를 사용한 이유가 무엇인가? sqlmodel을 통해 검증기를 사용할 수 있지 않을까?
+= SQLModel로도 가능하지만, 로그인 요청에는 별도의 pydantic 모델이 적절했다.
+
+
+8단계: 선언한 APIRouter의 post 방식으로 다음과 같은 인자를 받아 처리
+	- login_data: LoginRequest
+	- response: Response
+	- uow: UnitOfWork = Depends(get_uow)
+
+9단계: Depends(get_uow)를 실행해, endpoint 생성
+
+## UnitOfWork.py
+
+10단계: 받은 session 인자를 통해 기능별 repository 생성
+
+## login_router.py
+
+11단계: Application Layer 계층의 AuthService 객체를 생성, login()을 실행
+	- param summary
+		- user: LoginRequest -> pydantic 검증 모델
+		- response: Response -> fastapi.Session 트랜잭션 
+		- uow: UnitOfWork -> 기능별 트랜잭션 UOW
+
+12단계: UnitOfWork.AuthRepository.find_by_name()로 유저 정보 검증 및 반환, with 블록 종료
+
+13단계: 반환된 유저 정보에 대한 조회 정보
+	- 유저 정보가 없으면 raise HTTPException
+	- 있으면 CryptContext를 통해 hash를 verify
+
+## jwt_token.py
+
+14단계: jose.jwt 라이브러리를 통해 JwtTokenProvider.create_access_token(username, exp) 실행
+	- token summary
+		- access token: Authorization Header에 사용되는 짧은 수명의 인증 정보
+		- refresh token: access token 만료 후 재발급에 사용되는 장기 인증 정보
+
+15단계: 받은 인자를 통해 payload 생성 후 jwt.encode()의 결과를 반환
+
+16단계: JwtTokenProvider.create_refresh_token(username, exp) 실행 후 서명된 JWT 생성
+
+17단계: login() 인자인 Response 객체를 통해 cookie baking
+	- param summary
+		- key-value: "refresh_token"-refresh_token 
+		- httponly: True
+		- secure: False	// http 이기에 false
+		- samesite="lax"
+
+18단계: token, bearer 정보를 반환한다.
+
+## login_router.py
+
+19단계: AuthSevice.login()은 token, bearer를 반환 후 endpoint(get_uow)로 이동
+
+
+## database.py
+
+20단계: get_uow()의 with 블록 종료, session.close()를 실행 후 완전 종료
+
+## axiosInstance.jsx
+
+21단계: 브라우저의 Axios instance가 HTTP 응답 검증
+	- if 200: const login 결과인 res로 반환
+	- if error: 
+		1. error.response 401이라면 다시 연결(_retry)
+		- "/auth/refresh“ 경로라면 logout 후 최상위 페이지로 이동
+		2. Refresh가 불가능한 상태라면(isRefreshing) failedQueue에 push
+			- error 값에 Authorization 추가 후 새 axiosInstance 반환
+		3. Refresh가 가능한 상태라면 "/auth/refresh“ 경로로 post 요청
+			- Header summary
+				- withCredientials: true
+		- APIRouter 통해 변환된 요청메서드(post)에 맞는 refresh handler 매칭
+			- param summary
+				- request: fastapi.Request
+				- response: fastapi.Response
+		- request 인자로 refresh_token을 가져와 AuthService.refresh(refresh_token)을 실행
+		- JwtTokenProvider.validate_refresh_token 실행
+			- payload decode 후 token_type에 따른 오류 검증 후 반환
+		- 반환된 payload의 정보로JwtTokenProvider.create_access_token() 실행 후 반환
+		4. zustand store의 login 실행
+		5. 생성된 token을 processQueue에 (null, access_token) 삽입
+			- login summary
+				- (error, token = null) => { ... }
+				- 에러 존재 시 Promise.reject(error)
+				- 에러 부재 시 Promise.resolve(token)
+		6. error 값 header에 Authorization 추가 후 axiosInstance 반환
+
+### originalRequest는 알아보기 너무 힘들다. 이름 바꿀 것 
+### response.use의 끝 값을 보니, originalRequest라는 이름이 맞는거 같기도
+
+
+22단계: LoginPage의 handleLogin 내부 response 값으로 jwtDecode("jwt-decode) 실행해 username 추출
+23단계: 추출된 username, response.token 값 null check 후 zustand store의 login 실행
+24단계: navigate로 KioskPage로 이동
+
+
+
+
+
+
+
+
+
