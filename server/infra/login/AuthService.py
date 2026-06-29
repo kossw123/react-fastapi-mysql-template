@@ -1,16 +1,14 @@
-from http import HTTPStatus
 from typing import TYPE_CHECKING
 from infra.login.models.UserModel import UserModel
 from fastapi import HTTPException
 from infra.login.jwt_token import JwtTokenProvider
 from infra.login.password_hasher import PasswordHasher
-from infra.login.models.UserModel import UserModel
 from uuid import UUID, uuid4
-from datetime import datetime, timedelta
+from datetime import timedelta
+from infra.redis_client import blacklist_token
 if TYPE_CHECKING:
     from src.shared.UnitOfWork import UnitOfWork
     from infra.login.models.LoginRequest import LoginRequest
-    from infra.login.models.SignUpRequest import SignUpRequest
     from infra.login.models.UserRequest import UserRequest
     from infra.login.models.UserResponse import UserResponse
     from fastapi import Response
@@ -100,7 +98,7 @@ class AuthService():
         return _Mapper()._to_userresponse(user)
 
     def refresh(self,
-                               token: str):
+                token: str):
         print("AUTHSERVICE REFRESH CALL")
         payload = self.token_provider.validate_refresh_token(token)
 
@@ -111,6 +109,17 @@ class AuthService():
             "token": access_token,
             "bearer": "bearer",
         }
+    
+
+    def logout(self,
+               token: str):
+        print("CALL AUTHSERVICE.LOGOUT")
+        payload = self.token_provider.validate_access_token(token)
+        
+        jti = payload.get("jti")
+        expire=  payload.get("exp")
+
+        blacklist_token(jti, expire)
 
 
 class _Mapper():

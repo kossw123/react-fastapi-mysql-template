@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends
 from infra.database import get_uow
 from src.shared.UnitOfWork import UnitOfWork

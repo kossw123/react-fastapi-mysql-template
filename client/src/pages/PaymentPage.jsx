@@ -26,7 +26,7 @@ import {
 } from "./styles/PaymentPageStyle";
 import useOrderStore from "../zustand_store/OrderStore";
 import useAuthStore from "../zustand_store/AuthStore";
-
+import { logout } from "../services/loginApi";
 function PaymentPage() {
   const navigate = useNavigate();
   const logoutAction = useAuthStore((state) => state.logout);
@@ -60,8 +60,9 @@ function PaymentPage() {
       return;
     }
 
-      alert("결제가 완료되었습니다.");
-      console.log(logoutAction);
+    alert("결제가 완료되었습니다.");
+    console.log(logoutAction);
+    logout();
     logoutAction();
     navigate("/");
   };

@@ -19,13 +19,13 @@ import { ordering } from "../services/orderApi";
 
 import OrderPanel from "../components/OrderPanel";
 import useOrderStore from "../zustand_store/OrderStore";
-import useAuthStore from "../zustand_store/AuthStore"; // 추가
+import useAuthStore from "../zustand_store/AuthStore";
+import { logout } from "../services/loginApi";
 
 function KioskPage() {
   const navigate = useNavigate();
   const setOrder = useOrderStore((state) => state.setOrder);
-  const logout = useAuthStore((state) => state.logout); // 추가
-
+  const logoutAction = useAuthStore((state) => state.logout);
   const [orderItems, setOrderItems] = useState([]);
   const [products, setProducts] = useState([]);
 
@@ -97,7 +97,9 @@ function KioskPage() {
   };
 
   const logoutHandle = () => {
-    logout(); // zustand 상태 초기화
+    const { token } = useAuthStore.getState();
+    logout(token);
+    logoutAction(); // zustand 상태 초기화
     navigate("/"); // 로그인 페이지로 이동
   };
 

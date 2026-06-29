@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from src.shared.EventDispatcher import EventDispatcher
     from src.shared.UnitOfWork import UnitOfWork
     from src.Order.infra.models.OrderRequest import OrderRequest
-    from src.Order.domain.Order import Order
 
 
 class OrderService:

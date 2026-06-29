@@ -2,6 +2,10 @@ from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from http import HTTPStatus
+from uuid import uuid4
+from infra.redis_client import is_token_blacklisted
+
+
 class JwtTokenProvider:
     SECRET_KEY = "my-secret-key"
     ALGORITHM = "HS256"
@@ -20,7 +24,8 @@ class JwtTokenProvider:
 
         _to_payload.update({
             "exp": expire,
-            "token_type": "access"
+            "token_type": "access",
+            "jti": str(uuid4()),
         })
 
         return jwt.encode(_to_payload, self.SECRET_KEY, algorithm=self.ALGORITHM)
@@ -34,6 +39,14 @@ class JwtTokenProvider:
                 raise HTTPException(
                     status_code=HTTPStatus.UNAUTHORIZED,
                     detail="not verify access token"
+                )
+            
+            jti = payload.get("jti")
+
+            if is_token_blacklisted(jti):
+                raise HTTPException(
+                    status_code=HTTPStatus.UNAUTHORIZED,
+                    detail="blacklist token",
                 )
         except JWTError:
             raise HTTPException(

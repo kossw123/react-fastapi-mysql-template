@@ -1,0 +1,21 @@
+[클라이언트] LoginPage.jsx, handleLogin().login(), 로그인 핸들러 진입 LoginPage.jsx:41
+[클라이언트] LoginPage.jsx, handleLogin().login(), login axios 요청 loginApi.jsx:4
+[클라이언트] loginApi.jsx, login() 요청 함수 진입 axiosInstance.jsx:30
+[클라이언트] axiosInstance.jsx, axiosInstance config 확인 axiosInstance.jsx:31
+[클라이언트] axiosInstance.jsx, baseURL http://localhost:8000 axiosInstance.jsx:32
+[클라이언트] axiosInstance.jsx, timeout 5000 axiosInstance.jsx:33
+[클라이언트] axiosInstance.jsx, withCredentials true axiosInstance.jsx:38
+[클라이언트] axiosInstance.jsx, interceptors.request.use(stmt, ), body 요청 오류 없음 확인 axiosInstance.jsx:56
+[클라이언트] axiosInstance.jsx, interceptors.request.use(stmt, ), body의 요청 서버로 전송 axiosInstance.jsx:74
+[클라이언트] axiosInstance.jsx, interceptors.response.use(response, ), 400번대 응답 확인 loginApi.jsx:10
+[클라이언트] loginApi.jsx, 결과 반환 LoginPage.jsx:45
+[클라이언트] LoginPage.jsx, handleLogin().login(), login axios 결과 반환 LoginPage.jsx:56
+[클라이언트] LoginPage.jsx, handleLogin().login(), zustand store의 login 요청 LoginPage.jsx:62
+[클라이언트] LoginPage.jsx, handleLogin().login(), kiosk 이동 axiosInstance.jsx:30
+[클라이언트] axiosInstance.jsx, axiosInstance config 확인 axiosInstance.jsx:31
+[클라이언트] axiosInstance.jsx, baseURL http://localhost:8000 axiosInstance.jsx:32
+[클라이언트] axiosInstance.jsx, timeout 5000 axiosInstance.jsx:33
+[클라이언트] axiosInstance.jsx, withCredentials true axiosInstance.jsx:38
+[클라이언트] axiosInstance.jsx, interceptors.request.use(stmt, ), body 요청 오류 없음 확인 axiosInstance.jsx:56
+[클라이언트] axiosInstance.jsx, interceptors.request.use(stmt, ), body의 요청 서버로 전송 axiosInstance.jsx:74
+[클라이언트] axiosInstance.jsx, interceptors.response.use(response, ), 400번대 응답 확인

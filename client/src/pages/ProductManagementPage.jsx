@@ -7,6 +7,7 @@ import {
   deleteProduct,
   updateProduct,
 } from "../services/productApi";
+import { logout } from "../services/loginApi";
 
 import {
   PageWrapper,
@@ -40,6 +41,8 @@ function ProductPage() {
   }, []);
 
   const handleLogout = () => {
+    const { token } = useAuthStore.getState();
+    logout(token);
     logoutAction();
     navigate("/");
   };
