@@ -1,4 +1,10 @@
-from src.shared_interface.IEvent import IEvent, IEventHandler
+from src.shared_interface.IEvent import IEvent
+from src.shared_interface.IEventHandler import IEventHandler
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from src.shared.UnitOfWork import UnitOfWork
 
 
 # 1. Created
@@ -11,42 +17,40 @@ class ProductCreated(IEvent):
         self.id = id
         self.name = name
         self.price = price
-class ProductCreatedHandler(IEventHandler):
-    def handle(self, event):
-        return {
-            "message": f"ProductCreated: {event.id}, {event.name}"
-        }
 
+
+class ProductCreatedHandler(IEventHandler):
+    def handle(self, event: ProductCreated, uow: UnitOfWork):
+        return {"message": f"ProductCreated: {event.id}, {event.name}"}
 
 
 class ProductActivated(IEvent):
     def __init__(self, id):
         self.id = id
+
+
 class ProductActivatedHandler(IEventHandler):
     def handle(self, event):
-        return {
-            "message": f"Product Activated : {event.id}"
-        }
-    
-
+        return {"message": f"Product Activated : {event.id}"}
 
 
 class ProductDiscontinued(IEvent):
-    def __init__(self, id):
+    def __init__(self, id, name: str):
         self.id = id
+        self.name = name
+
+
 class ProductDiscontinuedHandler(IEventHandler):
-    def handle(self, event):
-        return { 
-            "message": f"Product Discontinued : {event.id}"
-        }
+    def handle(self, event: ProductDiscontinued):
+        return {"message": f"Product Discontinued : {event.id}, {event.name}"}
 
 
 class ProductOutOfStack(IEvent):
     def __init__(self, id, name):
         self.id = id
         self.name = name
+
+
 class ProductOutOfStackHandler(IEventHandler):
     def handle(self, event):
-        return {
-            "message": f"Product Out Of Stack : {event.id}, {event.name}"
-        }
+        return {"message": f"Product Out Of Stack : {event.id}, {event.name}"}

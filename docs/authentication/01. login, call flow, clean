@@ -1,0 +1,97 @@
+# Login & Authentication Call Flow
+
+본 문서는 프론트엔드(React)에서 백엔드(FastAPI)로 이어지는 로그인 요청 및 JWT 토큰(Access/Refresh) 기반의 인증 흐름을 설명합니다.
+
+## Sequence Overview
+
+1. **Client Request:** 사용자의 로그인 요청 및 Axios Request Interceptor 처리
+    
+2. **Server Authentication:** FastAPI 라우터 처리, 데이터 검증 및 DB 조회
+    
+3. **Token Issuance:** JWT 생성 및 HTTP-Only 쿠키 세팅
+    
+4. **Client Response & Interceptor:** Axios Response Interceptor의 토큰 갱신(Refresh) 로직
+    
+5. **State Update:** 전역 상태(Zustand) 업데이트 및 라우팅
+    
+
+## Detailed Flow
+
+### Phase 1: Client Request (로그인 요청)
+
+**[ Frontend ]**
+
+1. **`LoginPage.jsx`**: 사용자가 로그인 폼을 Submit 하면 `handleLogin()` 내부에서 `login()` API 함수가 호출됩니다.
+    
+2. **`loginApi.jsx`**: `username`과 `password`를 담아 `axiosInstance.post("/auth/login")`를 실행합니다.
+    
+3. **`axiosInstance.jsx` (Request Interceptor)**:
+    
+    - 요청이 서버로 전송되기 직전, Zustand Store에서 `access_token` 존재 여부를 확인합니다.
+        
+    - 토큰이 있다면 `Authorization: Bearer <token>` 헤더를 추가하고, 없다면 원본 그대로 요청을 통과시킵니다.
+        
+    - _Config:_ `baseURL: "http://localhost:8000"`, `timeout: 5000`, `withCredentials: true`
+        
+
+### Phase 2: Server Authentication (서버 인증 및 검증)
+
+**[ Backend ]** 
+
+4. **`login_router.py`**: `/auth/login` 엔드포인트(POST)로 요청이 인입됩니다. 
+5. **Pydantic Validation (`LoginRequest`)**:
+
+- 들어온 요청 본문을 `LoginRequest` 모델을 통해 검증합니다.
+    
+- _Note:_ DB 스키마인 SQLModel을 직접 사용하지 않고 Pydantic을 분리한 이유는, 로그인 요청이라는 '행위'에 특화된 별도의 데이터 검증 모델이 구조상 더 안전하고 적합하기 때문입니다.
+    
+
+6. **`UnitOfWork` & `AuthService`**:
+    
+    - `Depends(get_uow)`를 통해 트랜잭션 단위인 Unit of Work(UoW) 객체를 주입받습니다.
+        
+    - `AuthService.login()`을 호출하여 비즈니스 로직을 실행합니다.
+        
+7. **`AuthRepository` 검증**:
+    
+    - DB에서 유저를 조회 (`find_by_name`)하고, 존재하지 않거나 `CryptContext`를 통한 비밀번호 검증(Hash Verify)에 실패하면 `HTTPException(401)`을 발생시킵니다.
+        
+
+### Phase 3: Token Issuance (토큰 발급 및 응답)
+
+**[ Backend ]** 8. **`jwt_token.py` (토큰 생성)**:
+
+- 인증이 완료되면 `jose.jwt`를 사용하여 두 가지 토큰을 발급합니다.
+    
+- **Access Token**: 짧은 수명, API 접근용 (Header 사용)
+    
+- **Refresh Token**: 긴 수명, Access Token 재발급용
+    
+
+9. **Cookie Baking & Response**:
+    
+    - 발급된 `refresh_token`은 클라이언트에서 접근할 수 없도록 `Response` 객체에 HTTP-Only 쿠키로 굽습니다. _(설정: `httponly=True`, `secure=False` (로컬 환경), `samesite="lax"`)_
+        
+    - `access_token`과 `bearer` 타입 정보는 JSON 형태로 클라이언트에게 반환합니다.
+        
+
+### Phase 4: Response Handling & Token Refresh (응답 및 토큰 갱신)
+
+**[ Frontend ]** 
+10. **`axiosInstance.jsx` (Response Interceptor)**: 서버의 응답을 가로채어 검증합니다. - **[HTTP 200] 성공 시**: 응답 데이터를 그대로 반환합니다. 
+	**[HTTP 401] 에러 발생 (토큰 만료 등) 시**: 
+		1. 에러가 발생한 원본 요청(`originalRequest`)을 보관합니다. 
+		2. 만약 에러가 난 경로가 `/auth/refresh` 였다면, Refresh Token마저 만료된 것이므로 로그아웃 처리 후 로그인 페이지로 이동합니다. 
+		3. **Token Refresh 로직 (`failedQueue` 적용)**: 
+			- 이미 갱신 중(`isRefreshing === true`)이라면, 현재 요청을 `failedQueue`에 대기시킵니다. 
+			- 갱신 중이 아니라면 `/auth/refresh`로 갱신 요청을 보냅니다. (이때 쿠키의 Refresh Token이 자동 전송됨). 
+			- 갱신 성공 시, 새로 받은 `access_token`을 Zustand에 저장하고, 보관해둔 `originalRequest`의 Authorization 헤더를 새 토큰으로 교체한 뒤 다시 요청(Retry)합니다. 
+			- 대기 중이던 `failedQueue`의 요청들(`processQueue`)도 새 토큰과 함께 모두 재실행합니다.
+
+
+### Phase 5: Client State & Routing (상태 업데이트 및 이동)
+
+**[ Frontend ]** 
+11. **`LoginPage.jsx` (로그인 마무리)**: - 정상적인 응답(res)을 받으면 `jwt-decode` 라이브러리를 사용해 Access Token에서 `username` 등 페이로드(Payload)를 추출합니다. 
+12. **Zustand State Update**: 추출된 정보와 토큰이 Null이 아님을 확인한 후, Zustand Store의 `login` 액션을 실행하여 클라이언트 전역 상태를 인증된 상태로 변경합니다. 
+13. **Navigation**: `Maps("/kiosk")`를 통해 메인 Kiosk 페이지로 이동하며 플로우가 종료됩니다.

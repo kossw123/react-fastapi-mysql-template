@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlmodel
+pymysql
+python-dotenv
+cryptography
+redis
+pydantic-settings
+python-dotenv
+python-jose[cryptography]
+passlib==1.7.4
+bcrypt==4.0.1

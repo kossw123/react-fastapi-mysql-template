@@ -1,7 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from typing import TYPE_CHECKING
 
 
-class ICommandHandler():
+if TYPE_CHECKING:
+    from src.shared_interface.ICommand import ICommand
+    from src.shared.UnitOfWork import UnitOfWork
+
+
+class ICommandHandler:
     @abstractmethod
-    def handle(self, command):
+    def handle(self, command: ICommand, uow: UnitOfWork):
         pass

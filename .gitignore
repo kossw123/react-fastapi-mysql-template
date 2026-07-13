@@ -35,6 +35,13 @@ Thumbs.db
 
 # Docker
 *.pid
+docker-compose.override.yml
+
+# Env
+.env*
+
+# Docker volumes (사용 중이면 추가)
+db-data/
 
 # Coverage
 .coverage
@@ -42,3 +49,4 @@ htmlcov/
 
 # Misc
 .idea/
+

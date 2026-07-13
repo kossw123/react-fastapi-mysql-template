@@ -1,61 +1,46 @@
+from typing import TYPE_CHECKING
+from src.Product.domain.Product import Product
 from src.shared_interface.ICommand import ICommand
 from src.shared_interface.ICommandHandler import ICommandHandler
-from src.Product.domain.Product import Product
-from src.shared.Repository import Domain_Repository
-from src.shared.UnitOfWork import UnitOfWork
+
+
+if TYPE_CHECKING:
+    from src.shared.UnitOfWork import UnitOfWork
+
 
 class ProductCreate(ICommand):
-    def __init__(self, id, name, price):
+    def __init__(self, 
+                 id: int, 
+                 name: str, 
+                 price: int):
         self.id = id
         self.name = name
         self.price = price
+
+
 class ProductCreateHandler(ICommandHandler):
-    def __init__(self, repo: Domain_Repository, uow: UnitOfWork):
-        self.repo = repo
-        self.uow = uow
-    def handle(self, command: ProductCreate):
+    def handle(self, 
+               command: ProductCreate, 
+               uow: UnitOfWork):
         product = Product.create(command.id, command.name, command.price)
-        self.repo.save(product)
-        self.uow.register(product)
-
-class ProductActivate(ICommand):
-    def __init__(self, id):
-        self.id = id
-class ProductActivateHandler(ICommandHandler):
-    def __init__(self, repo: Domain_Repository, uow: UnitOfWork):
-        self.repo = repo
-        self.uow = uow
-    def handle(self, command: ProductActivate):
-        product: Product = self.repo.find(command.id)
-        product.activate()
-        self.repo.save(product)
-        self.uow.register(product)
-
+        print("[COMMAND: ProductCreateHandler]: product info = ", product.id, "+", product.name)
+        with uow:
+            uow.product_repository.save(product)
+            uow.domain_register(product)
+        return product
+    
 
 class ProductDiscontinue(ICommand):
-    def __init__(self, id):
+    def __init__(self, 
+                 id: int):
         self.id = id
+
 class ProductDiscontinueHandler(ICommandHandler):
-    def __init__(self, repo: Domain_Repository, uow: UnitOfWork):
-        self.repo = repo
-        self.uow = uow
-    def handle(self, command: ProductDiscontinue):
-        product: Product = self.repo.find(command.id)
+    def handle(self, 
+               command: ProductDiscontinue, 
+               uow: UnitOfWork):
+        product: Product = uow.product_repository.find(command.id) 
         product.discontinued()
-        self.repo.save(product)
-        self.uow.register(product)
-
-
-class ProductOutOfStack(ICommand):
-    def __init__(self, id):
-        self.id = id
-class ProductOutOfStackHandler(ICommandHandler):
-    def __init__(self, repo: Domain_Repository, uow: UnitOfWork):
-        self.repo = repo
-        self.uow = uow
-    def handle(self, command: ProductOutOfStack):
-        product: Product = self.repo.find(command.id)
-        product.outofstack()
-        self.repo.save(product)
-        self.uow.register(product)
-
+        uow.product_repository.delete(product.id)
+        uow.domain_register(product)
+        return product

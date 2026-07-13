@@ -1,9 +1,3 @@
-from src.config import app
-from src.bootstrap import bootstrap
+from src.config import create_app
 
-
-container = bootstrap()
-
-event_dispatcher = container["eventDispatcher"]
-command_bus = container["commandBus"]
-uow = container["unitOfWork"]
+app = create_app()
