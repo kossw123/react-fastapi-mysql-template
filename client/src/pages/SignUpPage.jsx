@@ -19,8 +19,6 @@ import { signup } from "../services/signupApi";
 function SignUpPage() {
   const navigate = useNavigate();
 
-  const API = "http://localhost:8000";
-
   const [username, setUsername] = useState("");
 
   const [email, setEmail] = useState("");

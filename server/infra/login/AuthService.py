@@ -60,8 +60,8 @@ class AuthService():
                     detail="Not verify password"
                 )
             
-            access_token = self.token_provider.create_access_token(account.username, expire_delta=timedelta(seconds=30))
-            refresh_token = self.token_provider.create_refresh_toekn(account.username, expire_delta=timedelta(minutes=2))
+            access_token = self.token_provider.create_access_token(account.username, expire_delta=timedelta(minutes=15))
+            refresh_token = self.token_provider.create_refresh_toekn(account.username, expire_delta=timedelta(minutes=15))
 
             response.set_cookie(
                 key="refresh_token",

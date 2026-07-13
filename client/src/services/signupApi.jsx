@@ -2,7 +2,7 @@ import axiosinstance from "./axiosInstance";
 
 export const signup = async (username, email, password) => {
   return await axiosinstance
-    .post(`/signup`, {
+    .post(`/auth/signup`, {
       username: username,
       email: email,
       password: password,

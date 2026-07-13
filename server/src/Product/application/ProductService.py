@@ -21,6 +21,7 @@ class ProductService:
     def __init__(self, bus: CommandBus, dispatcher: EventDispatcher):
         self.bus = bus
         self.dispatcher = dispatcher
+        self.mapper = _Mapper()
 
     def create_product(self, 
                        product_model: ProductModel, 
@@ -32,14 +33,18 @@ class ProductService:
             product_model.name,
             product_model.price,
         )
-        phase._step1_execute_command(command)
+        phase._execute_command(command)
         
-        return Product.restore(
+        product = Product.restore(
             product_id, 
             product_model.name, 
             product_model.price, 
             product_model.status
             )
+        
+        print(type(product))
+
+        return self.mapper._to_response(product) 
         
 
     def discontinued_product(self, 
@@ -47,14 +52,17 @@ class ProductService:
                            uow: UnitOfWork):
         phase = _Ochestration(self.bus, self.dispatcher, uow)    
         command = ProductDiscontinue(product_id)
-        phase._step1_execute_command(command)
+        phase._execute_command(command)
 
     def update_product(self,
                        product_id: UUID,
                        product_data: ProductModel,
                        uow: UnitOfWork) -> Product:
         repo = uow.product_repository
-        return repo.update(product_id, product_data) 
+        product =  repo.update(product_id, product_data)
+
+        return self.mapper._to_response(product)
+
 
 class _Ochestration():
     def __init__(self, bus: CommandBus, dispatcher: EventDispatcher, uow: UnitOfWork):
@@ -62,7 +70,7 @@ class _Ochestration():
         self.uow = uow
         self.dispatcher = dispatcher
 
-    def _step1_execute_command(self, command: ICommand):
+    def _execute_command(self, command: ICommand):
         with self._connect_command(self.uow):
             output = self.bus.dispatch(command, self.uow)
 
@@ -79,3 +87,13 @@ class _Ochestration():
                 break
             self.dispatcher.dispatch(events)
         
+
+
+class _Mapper():
+    def _to_response(self, data: Product):
+        return {
+            "id": data.id,
+            "name": data.name,
+            "price": data.price,
+            "status": data.status,
+        }

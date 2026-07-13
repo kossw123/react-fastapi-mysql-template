@@ -29,10 +29,7 @@ def create_product(product: ProductModel, uow: UnitOfWork = Depends(get_uow)):
     bus = container["COMMAND_BUS"]
     dispatcher = container["EVENT_DISPATCHER"]
     service = ProductService(bus, dispatcher)
-
-    with uow:
-        result = service.create_product(product, uow)
-    return _to_response(result)
+    return service.create_product(product, uow)
 
 # const res = await axios.delete(`${API}/products/${productId}`);
 @router.delete("/{product_id}")
@@ -41,8 +38,8 @@ def deactivate_product(product_id: UUID, uow: UnitOfWork = Depends(get_uow)):
     dispatcher = container["EVENT_DISPATCHER"]
     
     service = ProductService(bus, dispatcher)
-    with uow:
-        result = service.discontinued_product(product_id, uow)
+    service.discontinued_product(product_id, uow)
+        
 
 
 # const res = await axios.put(`${API}/products/${productId}`, updatedData);
@@ -53,20 +50,6 @@ def update_product(product_id: UUID,
     bus = container["COMMAND_BUS"]
     dispatcher = container["EVENT_DISPATCHER"]    
     service = ProductService(bus, dispatcher)
-
-    with uow:
-        result = service.update_product(product_id, product_data, uow)
-    return _to_response(result)
+    return service.update_product(product_id, product_data, uow)
 
 
-
-def _to_response(data: Product):
-                
-    res = {
-        "id": data.id,
-        "name": data.name,
-        "price": data.price,
-        "status": data.status,
-    }
-
-    return res
