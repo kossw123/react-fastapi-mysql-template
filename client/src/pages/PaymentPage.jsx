@@ -27,6 +27,11 @@ import {
 import useOrderStore from "../zustand_store/OrderStore";
 import useAuthStore from "../zustand_store/AuthStore";
 import { logout } from "../services/loginApi";
+
+import { loadTossPayments } from "@tosspayments/payment-sdk";
+
+const clientKey = "test_ck_QbgMGZzorzbLvpNDOkxkrl5E1em4";
+
 function PaymentPage() {
   const navigate = useNavigate();
   const logoutAction = useAuthStore((state) => state.logout);
@@ -49,7 +54,7 @@ function PaymentPage() {
     "현금",
   ];
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!paymentMethod) {
       alert("결제 수단을 선택해주세요.");
       return;
@@ -60,11 +65,35 @@ function PaymentPage() {
       return;
     }
 
-    alert("결제가 완료되었습니다.");
-    console.log(logoutAction);
-    logout();
-    logoutAction();
-    navigate("/");
+    if (orderItems.length === 0) {
+      alert("주문 내역이 없습니다.");
+      return;
+    }
+
+    try {
+      const tossPayments = await loadTossPayments(clientKey);
+      const orderName =
+        orderItems.length === 1
+          ? orderItems[0].name
+          : `${orderItems[0].name} 외 ${orderItems.length - 1}건`;
+
+      await tossPayments.requestPayment("카드", {
+        amount: totalPrice,
+        // eslint-disable-next-line react-hooks/purity
+        orderId: `ORDER_${Date.now()}`,
+        orderName,
+        successUrl: `${window.location.origin}/payment/success`,
+        failUrl: `${window.location.origin}/payment/fail`,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+
+    // alert("결제가 완료되었습니다.");
+    // console.log(logoutAction);
+    // logout();
+    // logoutAction();
+    // navigate("/");
   };
 
   return (
