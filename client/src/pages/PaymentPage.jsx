@@ -30,7 +30,7 @@ import { logout } from "../services/loginApi";
 
 import { loadTossPayments } from "@tosspayments/payment-sdk";
 
-const clientKey = "test_ck_QbgMGZzorzbLvpNDOkxkrl5E1em4";
+const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
 
 function PaymentPage() {
   const navigate = useNavigate();

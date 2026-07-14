@@ -9,15 +9,20 @@ from uuid import UUID
 from infra.database import verify_access_token
 
 
+if TYPE_CHECKING:
+    from src.Payment.infra.PaymentConfirmRequest import PaymentConfirmRequest
+
+
 payment_router = APIRouter(prefix="/payment", tags=["payment"], dependencies=[
     Depends(verify_access_token)
 ])
 
 
-@payment_router.post("/", response_model=list[ProductModel])
-def read_payment(uow: UnitOfWork = Depends(get_uow)):
+@payment_router.post("/confirm")
+def payment_confirm(request: PaymentConfirmRequest, 
+                    uow: UnitOfWork = Depends(get_uow)):
         bus = container["COMMAND_BUS"]
         dispatcher = container["EVENT_DISPATCHER"]
         service = PaymentService(bus, dispatcher)
 
-        # return 
+        return service.confirm(request, uow)
