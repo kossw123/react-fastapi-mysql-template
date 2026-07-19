@@ -9,6 +9,8 @@ import PaymentPage from "./pages/PaymentPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+
 function App() {
   return (
     <Routes>
@@ -23,6 +25,7 @@ function App() {
         <Route path="/paymentpage" element={<PaymentPage />} />
         <Route path="/signuppage" element={<SignUpPage />} />
         <Route path="/kioskpage" element={<KioskPage />} />
+        <Route path="/payment/success" element={<PaymentSuccessPage />} />
       </Route>
     </Routes>
   );

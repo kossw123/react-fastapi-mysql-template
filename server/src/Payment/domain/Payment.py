@@ -4,6 +4,12 @@ from contextlib import contextmanager
 class Payment(): 
     def __init__(self):
         self.root = AggregateRoot()
+        self.payment_key : str
+        self.order_id : str
+        self.amount : int
+        # method=result["method"],
+        # status=result["status"]
+
     def authorize(self, id):
         with self.command_context():
             self.command_bus.dispatch(PaymentAuthorize(id))

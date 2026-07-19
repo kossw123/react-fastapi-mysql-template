@@ -89,11 +89,11 @@ function PaymentPage() {
       console.error(error);
     }
 
-    // alert("결제가 완료되었습니다.");
-    // console.log(logoutAction);
-    // logout();
-    // logoutAction();
-    // navigate("/");
+    alert("결제가 완료되었습니다.");
+    console.log(logoutAction);
+    logout();
+    logoutAction();
+    navigate("/");
   };
 
   return (
