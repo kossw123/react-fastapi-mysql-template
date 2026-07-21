@@ -4,24 +4,24 @@ from contextlib import contextmanager
 class Payment(): 
     def __init__(self):
         self.root = AggregateRoot()
-        self.payment_key : str
-        self.order_id : str
-        self.amount : int
-        # method=result["method"],
-        # status=result["status"]
+        self.id
+        self.order_id
+        self.customer_id
+        self.amount
+        self.status
 
-    def authorize(self, id):
-        with self.command_context():
-            self.command_bus.dispatch(PaymentAuthorize(id))
-    def capture(self, order_id, customer_id, payment_id):
-        with self.command_context():
-            self.command_bus.dispatch(PaymentCapture(order_id, customer_id, payment_id))
-    def fail(self, id, customer_id, amount):
-        with self.command_context():
-            self.command_bus.dispatch(PaymentFail(id, customer_id, amount))
-    def refund(self, id, customer_id, amount):
-        with self.command_context():
-            self.command_bus.dispatch(PaymentRefund(id, customer_id, amount))
+
+
+    def pending(self):      # 보류
+        pass
+    def completed(self):        # 결제 완료
+        pass
+    def failed(self):       # 결제 시도 실패
+        pass
+    def partially_canceled(self):   # 결제 부분 취소
+        pass
+    def canceled(self):     # 결제 취소
+        pass
 
     @contextmanager
     def command_context(self):
