@@ -3,11 +3,13 @@ import requests
 import base64
 import os
 
+from src.Payment.domain.commands import CreatePayment
+
 if TYPE_CHECKING:
     from src.shared.EventDispatcher import EventDispatcher
     from src.shared.CommandBus import CommandBus
     from src.shared.UnitOfWork import UnitOfWork
-    from src.Payment.infra.PaymentConfirmRequest import PaymentConfirmRequest
+    from server.src.Payment.infra.models.PaymentConfirmRequest import PaymentConfirmRequest
 
 
 class PaymentService:
@@ -42,6 +44,12 @@ class PaymentService:
                     "amount": request.amount,
                 }
             )
+
+        command = CreatePayment()
+
+        with uow:
+            uow.
+
         
         result = response.json()
 

@@ -5,7 +5,7 @@ from src.Product.infra.product_repository import ProductModel
 from src.shared.UnitOfWork import UnitOfWork
 from src.toy_bootstrap import container
 from infra.database import verify_access_token
-from src.Payment.infra.PaymentConfirmRequest import PaymentConfirmRequest
+from server.src.Payment.infra.models.PaymentConfirmRequest import PaymentConfirmRequest
 
 
 payment_router = APIRouter(prefix="/payment", tags=["payment"], dependencies=[

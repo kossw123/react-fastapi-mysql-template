@@ -1,16 +1,16 @@
 from src.shared.AggregateRoot import AggregateRoot
 from contextlib import contextmanager
+from src.Payment.domain.PaymentStatus import PaymentStatus
+from uuid import uuid1
 
 class Payment(): 
     def __init__(self):
         self.root = AggregateRoot()
         self.id
-        self.order_id
-        self.customer_id
-        self.amount
-        self.status
-
-
+        self.order_id : str = None
+        self.customer_id : str = None
+        self.amount : int = 0
+        self.status = PaymentStatus()
 
     def pending(self):      # 보류
         pass
