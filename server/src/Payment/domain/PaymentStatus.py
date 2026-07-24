@@ -1,7 +1,8 @@
 from enum import Enum
 
 class PaymentStatus(Enum):
-    PENDING = "PENDING"
+    NONE = "NONE"
+    PENDING = "PENDING"     
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIALLY_CANCELED = "PARTIALLY_CANCELED"

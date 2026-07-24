@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 import requests
 import base64
 import os
+from contextlib import contextmanager
 
 from src.Payment.domain.commands import CreatePayment
 
@@ -45,19 +46,37 @@ class PaymentService:
                 }
             )
 
+        result = response.json()
+        self.__logging(result)
+
         command = CreatePayment()
 
-        with uow:
-            uow.
-
+        with self._command_context():
+            payment = self.bus.dispatch(command, uow)
         
-        result = response.json()
+        return result
 
+
+    @contextmanager
+    def _command_context(self):
+        with self.uow:
+            yield
+        self._publish_events()
+
+    def _publish_events(self):
+        while True:
+            events = self.uow.collect_event()
+            if not events:
+                break
+            self.dispatcher.dispatch(events)
+
+
+    def __logging(self, result):        
         if result["status"] != "DONE":
             raise Exception("결제 승인 실패")
 
         print(result["status"])     # DONE
         print(result["method"])     # "간편결제"
         print(result["totalAmount"])    # 123
-        
+
         return result

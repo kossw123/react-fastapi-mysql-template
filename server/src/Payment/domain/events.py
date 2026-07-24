@@ -3,27 +3,35 @@ from src.shared_interface.IEvent import IEvent
 from src.shared_interface.IEventHandler import IEventHandler
 
 
-class CreatedPayment():       # 결제 생성
-    pass
+class CreatedPayment(IEvent):       # 결제 생성
+    def __init__(self):
+        pass
 
-class ConfirmedPayment():      # 결제 승인
-    pass
+class ConfirmedPayment(IEvent):      # 결제 승인
+    def __init__(self):
+            pass
 
-class CanceledPayment():       # 결제 취소
-    pass
+class CanceledPayment(IEvent):       # 결제 취소
+    def __init__(self):
+            pass
 
-class PartialCanceledPayment():        # 결제 부분 취소
-    pass
+class PartialCanceledPayment(IEvent):        # 결제 부분 취소
+    def __init__(self):
+            pass
 
-class CreatedPaymentHandler():       # 결제 생성
-    pass
+class CreatedPaymentHandler(IEventHandler):       # 결제 생성
+    def handle(self):
+        pass
 
-class ConfirmedPaymentHandler():      # 결제 승인
-    pass
+class ConfirmedPaymentHandler(IEventHandler):      # 결제 승인
+    def handle(self):
+            pass
 
-class CanceledPaymentHandler():       # 결제 취소
-    pass
+class CanceledPaymentHandler(IEventHandler):       # 결제 취소
+    def handle(self):
+            pass
 
-class PartialCanceledPaymentHandler():        # 결제 부분 취소
-    pass
+class PartialCanceledPaymentHandler(IEventHandler):        # 결제 부분 취소
+    def handle(self):
+            pass
 

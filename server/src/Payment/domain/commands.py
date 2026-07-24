@@ -3,29 +3,37 @@ from src.shared_interface.ICommandHandler import ICommandHandler
 
 
 
-class CreatePayment():       # 결제 생성
-    pass
+class CreatePayment(ICommand):       # 결제 생성
+    def __init__(self):
+        pass
 
-class ConfirmPayment():      # 결제 승인
-    pass
+class ConfirmPayment(ICommand):      # 결제 승인
+    def __init__(self):
+            pass
 
-class CancelPayment():       # 결제 취소
-    pass
+class CancelPayment(ICommand):       # 결제 취소
+    def __init__(self):
+            pass
 
-class PartialCancelPayment():        # 결제 부분 취소
-    pass
+class PartialCancelPayment(ICommand):        # 결제 부분 취소
+    def __init__(self):
+            pass
 
-class CreatePaymentHandler():       # 결제 생성
-    pass
+class CreatePaymentHandler(ICommandHandler):       # 결제 생성
+    def handle(self):
+        pass
 
-class ConfirmPaymentHandler():      # 결제 승인
-    pass
+class ConfirmPaymentHandler(ICommandHandler):      # 결제 승인
+    def handle(self):
+            pass
 
-class CancelPaymentHandler():       # 결제 취소
-    pass
+class CancelPaymentHandler(ICommandHandler):       # 결제 취소
+    def handle(self):
+            pass
 
-class PartialCancelPaymentHandler():        # 결제 부분 취소
-    pass
+class PartialCancelPaymentHandler(ICommandHandler):        # 결제 부분 취소
+    def handle(self):
+            pass
 
 
 
