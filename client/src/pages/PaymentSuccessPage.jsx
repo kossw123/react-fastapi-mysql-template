@@ -4,8 +4,9 @@ import axiosinstance from "../services/axiosInstance";
 
 function PaymentSuccessPage() {
   const [params] = useSearchParams();
-
+  console.log("PaymentSuccessPage access");
   useEffect(() => {
+    console.log("useEffect access");
     const confirmPayment = async () => {
       const paymentKey = params.get("paymentKey");
       const orderId = params.get("orderId");

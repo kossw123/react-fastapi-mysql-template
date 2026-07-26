@@ -2,6 +2,7 @@ from src.shared.AggregateRoot import AggregateRoot
 from contextlib import contextmanager
 from src.Payment.domain.PaymentStatus import PaymentStatus
 from uuid import uuid4
+from src.Payment.domain.events import CreatedPayment, ConfirmedPayment
 
 class Payment(): 
     def __init__(self):
@@ -30,10 +31,7 @@ class Payment():
                     raise Exception(f"Not Confirm Payment, Current status is {self.status}")
 
         self.status = PaymentStatus.PENDING
-
-        
-
-        self.root.register()
+        self.root.register(CreatedPayment())
 
     def completed(self):        # 결제 완료
         pass

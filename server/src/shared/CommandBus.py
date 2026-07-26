@@ -19,11 +19,11 @@ class CommandBus:
     #     return handler.handle(command, uow)
 
     def dispatch(self, command: ICommand, uow: UnitOfWork = None):
-        print(f"[COMMAND] {type(command).__name__}")
+        print(f"[BACKEND] [CommandBus.py] CommandBus > dispatch: {type(command).__name__} / START")
 
         handler = self.handlers[type(command)]
         result = handler.handle(command, uow)
 
-        print(f"[COMMAND DONE] {type(command).__name__}")
+        print(f"[BACKEND] [CommandBus.py] CommandBus > dispatch: {type(command).__name__} / DONE")
 
         return result

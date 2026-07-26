@@ -1,6 +1,9 @@
+from typing import TYPE_CHECKING
 from src.shared_interface.ICommand import ICommand
 from src.shared_interface.ICommandHandler import ICommandHandler
 
+if TYPE_CHECKING:
+    from src.shared.UnitOfWork import UnitOfWork
 
 
 class CreatePayment(ICommand):       # 결제 생성
@@ -20,20 +23,20 @@ class PartialCancelPayment(ICommand):        # 결제 부분 취소
             pass
 
 class CreatePaymentHandler(ICommandHandler):       # 결제 생성
-    def handle(self):
-        pass
+    def handle(self, command: ICommand, uow: UnitOfWork):
+        print(f"[BACKEND] [commands.py] COMMANDHANDLER > CreatePaymentHandler")
 
 class ConfirmPaymentHandler(ICommandHandler):      # 결제 승인
-    def handle(self):
-            pass
+    def handle(self, command: ICommand, uow: UnitOfWork):
+        print(f"[BACKEND] [commands.py] COMMANDHANDLER > ConfirmPaymentHandler")
 
 class CancelPaymentHandler(ICommandHandler):       # 결제 취소
-    def handle(self):
-            pass
+    def handle(self, command: ICommand, uow: UnitOfWork):
+        print(f"[BACKEND] [commands.py] COMMANDHANDLER > CancelPaymentHandler")
 
 class PartialCancelPaymentHandler(ICommandHandler):        # 결제 부분 취소
-    def handle(self):
-            pass
+    def handle(self, command: ICommand, uow: UnitOfWork):
+        print(f"[BACKEND] [commands.py] COMMANDHANDLER > ParticalCancelPaymentHandler")
 
 
 

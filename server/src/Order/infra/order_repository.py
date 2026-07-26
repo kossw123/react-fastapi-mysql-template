@@ -34,7 +34,7 @@ class OrderRepository():
         self.session.flush()
         self.session.refresh(order_model)
         return order
-    
+
 
 
 from src.Order.infra.order_model import OrderModel

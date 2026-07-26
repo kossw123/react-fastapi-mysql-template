@@ -5,7 +5,7 @@ from src.Product.infra.product_repository import ProductModel
 from src.shared.UnitOfWork import UnitOfWork
 from src.toy_bootstrap import container
 from infra.database import verify_access_token
-from server.src.Payment.infra.models.PaymentConfirmRequest import PaymentConfirmRequest
+from src.Payment.infra.models.PaymentConfirmRequest import PaymentConfirmRequest
 
 
 payment_router = APIRouter(prefix="/payment", tags=["payment"], dependencies=[
@@ -16,10 +16,9 @@ payment_router = APIRouter(prefix="/payment", tags=["payment"], dependencies=[
 @payment_router.post("/confirm")
 def confirm(request: PaymentConfirmRequest, 
                     uow: UnitOfWork = Depends(get_uow)):
-        print("confirm 진입")
         print(f"data : {request}")
         bus = container["COMMAND_BUS"]
         dispatcher = container["EVENT_DISPATCHER"]
-        service = PaymentService(bus, dispatcher)
+        service = PaymentService(bus, dispatcher, uow)
 
-        return service.confirm(request, uow)
+        return service.confirm(request)
