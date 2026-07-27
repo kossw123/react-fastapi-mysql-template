@@ -25,20 +25,16 @@ import {
   TotalSection,
 } from "./styles/PaymentPageStyle";
 import useOrderStore from "../zustand_store/OrderStore";
-import useAuthStore from "../zustand_store/AuthStore";
-import { logout } from "../services/loginApi";
 
 import { loadTossPayments } from "@tosspayments/payment-sdk";
 
 const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
 
 function PaymentPage() {
-  const navigate = useNavigate();
-  const logoutAction = useAuthStore((state) => state.logout);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [savePoint, setSavePoint] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const orderItems = useOrderStore((state) => state.items) ?? [];
 
   const totalPrice = orderItems.reduce(
@@ -55,6 +51,8 @@ function PaymentPage() {
   ];
 
   const handlePayment = async () => {
+    if (isSubmitting) return;
+
     if (!paymentMethod) {
       alert("결제 수단을 선택해주세요.");
       return;
@@ -69,6 +67,8 @@ function PaymentPage() {
       alert("주문 내역이 없습니다.");
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const tossPayments = await loadTossPayments(clientKey);
@@ -88,12 +88,6 @@ function PaymentPage() {
     } catch (error) {
       console.error(error);
     }
-
-    alert("결제가 완료되었습니다.");
-    console.log(logoutAction);
-    logout();
-    logoutAction();
-    navigate("/");
   };
 
   return (
@@ -172,9 +166,11 @@ function PaymentPage() {
         </PointContainer>
 
         <ButtonContainer>
-          <BackButton onClick={() => navigate(-1)}>이전으로</BackButton>
+          {/* <BackButton onClick={() => navigate(-1)}>이전으로</BackButton> */}
 
-          <PayButton onClick={handlePayment}>결제하기</PayButton>
+          <PayButton disabled={isSubmitting} onClick={handlePayment}>
+            {isSubmitting ? "결제창 열기..." : "결제하기"}
+          </PayButton>
         </ButtonContainer>
       </Container>
     </Page>
