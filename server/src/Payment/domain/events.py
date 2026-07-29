@@ -14,6 +14,7 @@ class ConfirmedPayment(IEvent):      # 결제 승인
 class CanceledPayment(IEvent):       # 결제 취소
     def __init__(self):
             pass
+
 class PartialCanceledPayment(IEvent):        # 결제 부분 취소
     def __init__(self):
             pass
@@ -34,6 +35,3 @@ class PartialCanceledPaymentHandler(IEventHandler):        # 결제 부분 취�
     def handle(self):
             pass
 
-
-class TestClass():
-    pass
