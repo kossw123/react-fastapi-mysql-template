@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from src.shared.EventDispatcher import EventDispatcher
     from src.shared.UnitOfWork import UnitOfWork
     from src.Order.infra.models.OrderRequest import OrderRequest
+    from uuid import UUID
 
 
 class OrderService:
@@ -29,6 +30,11 @@ class OrderService:
         with self._command_context():
             order = self.bus.dispatch(command, self.uow)
         return self._to_OrderResponse(order)
+
+    def find_by_id(self,
+                   order_id: UUID):
+        repo = self.uow.order_repository
+        return repo.find_by_Id(order_id)
 
 
     @contextmanager

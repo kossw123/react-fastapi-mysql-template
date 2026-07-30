@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING
 from src.Order.domain.Order import Order
+from sqlmodel import select
 if TYPE_CHECKING:
     from sqlmodel import Session
+    from uuid import UUID
 
 from src.Order.infra.orderitem_model import OrderItemModel 
 
@@ -34,6 +36,11 @@ class OrderRepository():
         self.session.flush()
         self.session.refresh(order_model)
         return order
+
+    def find_by_Id(self,
+                   order_id: UUID):
+        stmt = select(OrderModel).where(OrderModel.id == order_id)
+        return self.session.exec(stmt).first()
 
 
 

@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends
 from infra.database import get_uow
 from src.shared.UnitOfWork import UnitOfWork
@@ -10,6 +11,11 @@ order_router = APIRouter(prefix="/order", tags=["order"], dependencies=[
     Depends(verify_access_token)
 ])
 
+if TYPE_CHECKING:
+    from uuid import UUID
+
+
+
 @order_router.post("/ordering")
 def read_order(request: OrderRequest, 
                uow: UnitOfWork = Depends(get_uow)) -> OrderResponse:
@@ -18,3 +24,13 @@ def read_order(request: OrderRequest,
     dispatcher = container["EVENT_DISPATCHER"]
     service = OrderService(bus, dispatcher, uow)
     return service.create_order(request)
+
+
+# const orderResponse = await axiosinstance.get(`/orders/${orderId}`);
+@order_router.get("/{orderId}")
+def deactivate_product(order_id: UUID, uow: UnitOfWork = Depends(get_uow)):
+    bus = container["COMMAND_BUS"]
+    dispatcher = container["EVENT_DISPATCHER"]
+    
+    service = OrderService(bus, dispatcher, uow)
+    return service.find_by_id(order_id)
