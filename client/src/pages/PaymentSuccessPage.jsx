@@ -27,7 +27,7 @@ function PaymentSuccessPage() {
         setPaymentStatus("SUCCESS");
 
         // 2. 주문 상세 조회
-        const orderResponse = await axiosinstance.get(`/orders/${orderId}`);
+        const orderResponse = await axiosinstance.get(`/order/${orderId}`);
 
         setOrder(orderResponse.data);
       } catch (err) {
