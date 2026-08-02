@@ -84,7 +84,16 @@ function KioskPage() {
   const orderingHandle = async () => {
     try {
       const order = await ordering(orderItems);
+      console.log(
+        `[FRONTEND] KioskPage.jsx > orderingHandle.order > Object type: ${order}`,
+      );
+      console.log(
+        `[FRONTEND] KioskPage.jsx > orderingHandle.order > Object data: ${order.order_id}`,
+      );
       setOrder(order);
+      console.log(
+        `[FRONTEND] KioskPage.jsx > orderingHandle.order > Check Order: ${useOrderStore.getState().order_id}`,
+      );
       navigate("/paymentpage");
     } catch (error) {
       if (error.response?.status === 400) {

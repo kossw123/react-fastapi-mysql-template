@@ -36,6 +36,7 @@ function PaymentPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const orderItems = useOrderStore((state) => state.items) ?? [];
+  const orderId = useOrderStore((state) => state.order_id) ?? null;
 
   const totalPrice = orderItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -51,6 +52,10 @@ function PaymentPage() {
   ];
 
   const handlePayment = async () => {
+    console.log(
+      `[FRONTEND] PaymentPage.jsx > handlePayment / orderId: ${orderId}`,
+    );
+
     if (isSubmitting) return;
 
     if (!paymentMethod) {
@@ -80,7 +85,8 @@ function PaymentPage() {
       await tossPayments.requestPayment("카드", {
         amount: totalPrice,
         // eslint-disable-next-line react-hooks/purity
-        orderId: `ORDER_${Date.now()}`,
+        // orderId: `ORDER_${Date.now()}`,
+        orderId: orderId,
         orderName,
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`,
