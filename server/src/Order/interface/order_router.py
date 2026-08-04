@@ -7,6 +7,9 @@ from src.Order.application.OrderService import OrderService
 from src.Order.infra.models.OrderRequest import OrderRequest
 from src.Order.infra.models.OrderResponse import OrderResponse
 from infra.database import verify_access_token
+from src.Order.infra.order_model import OrderModel
+
+
 order_router = APIRouter(prefix="/order", tags=["order"], dependencies=[
     Depends(verify_access_token)
 ])
@@ -27,8 +30,9 @@ def read_order(request: OrderRequest,
 
 
 # const orderResponse = await axiosinstance.get(`/orders/${orderId}`);
-@order_router.get("/{orderId}")
-def deactivate_product(order_id: UUID, uow: UnitOfWork = Depends(get_uow)):
+@order_router.get("/{orderId}", response_model=OrderModel) 
+def find_order(order_id: UUID, 
+               uow: UnitOfWork = Depends(get_uow)) -> OrderResponse:
     bus = container["COMMAND_BUS"]
     dispatcher = container["EVENT_DISPATCHER"]
     

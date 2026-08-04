@@ -85,7 +85,8 @@ function PaymentPage() {
       await tossPayments.requestPayment("카드", {
         amount: totalPrice,
         // eslint-disable-next-line react-hooks/purity
-        // orderId: `ORDER_${Date.now()}`,
+        // 
+        // ,
         orderId: orderId,
         orderName,
         successUrl: `${window.location.origin}/payment/success`,
