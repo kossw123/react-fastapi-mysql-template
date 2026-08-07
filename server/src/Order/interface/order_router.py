@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends
 from infra.database import get_uow
 from src.shared.UnitOfWork import UnitOfWork
@@ -8,14 +7,11 @@ from src.Order.infra.models.OrderRequest import OrderRequest
 from src.Order.infra.models.OrderResponse import OrderResponse
 from infra.database import verify_access_token
 from src.Order.infra.order_model import OrderModel
-
+from uuid import UUID
 
 order_router = APIRouter(prefix="/order", tags=["order"], dependencies=[
     Depends(verify_access_token)
 ])
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 
 
@@ -30,7 +26,7 @@ def read_order(request: OrderRequest,
 
 
 # const orderResponse = await axiosinstance.get(`/orders/${orderId}`);
-@order_router.get("/{orderId}", response_model=OrderModel) 
+@order_router.get("/{order_id}", response_model=OrderModel) 
 def find_order(order_id: UUID, 
                uow: UnitOfWork = Depends(get_uow)) -> OrderResponse:
     bus = container["COMMAND_BUS"]

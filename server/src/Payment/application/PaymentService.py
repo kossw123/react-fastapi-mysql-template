@@ -5,7 +5,7 @@ import os
 from contextlib import contextmanager
 
 from src.Payment.domain.commands import CreatePayment
-
+from uuid import UUID
 if TYPE_CHECKING:
     from src.shared.EventDispatcher import EventDispatcher
     from src.shared.CommandBus import CommandBus
@@ -25,13 +25,12 @@ class PaymentService:
         print(request.orderId)
         print(request.amount)
 
-
         secret_key = os.getenv("TOSS_SECRET_KEY")
         auth = base64.b64encode(
             f"{secret_key}:".encode()
             ).decode()
 
-        print(f"[BACKEND] PaymentService.confirm.auth: {auth}")
+        print(f"[BACKEND] PaymentService.confirm() > auth: {auth}")
 
         result = self.__log_payment_status(auth, request).json()
         
@@ -60,8 +59,7 @@ class PaymentService:
 
     def __log_payment_status(self, 
                              auth: str,
-                             request: PaymentConfirmRequest,
-                             response: requests):
+                             request: PaymentConfirmRequest):
         try:
             response = requests.post(
                     "https://api.tosspayments.com/v1/payments/confirm",
@@ -75,27 +73,27 @@ class PaymentService:
                         "amount": request.amount,
                     }
                 )
-            print(f"[BACKEND] PaymentService.confirm > status_code: {response.status_code}")
-            print(f"[BACKEND] PaymentService.confirm > response.text: {response.text}")
+            print(f"[BACKEND] PaymentService.__log_payment_status() > status_code: {response.status_code}")
+            print(f"[BACKEND] PaymentService.__log_payment_status() > response.text: {response.text}")
         
         except requests.exceptions.HTTPError as http_err:
             # 4xx, 5xx 에러 처리 (예: 404 Not Found, 500 Internal Server Error)
-            print(f"[BACKEND] PaymentService.confirm > HTTPError")
+            print(f"[BACKEND] PaymentService.__log_payment_status() > HTTPError")
             print(f"> HTTP 에러 발생 (상태 코드: {response.status_code}): {http_err}")
             
         except requests.exceptions.ConnectionError:
             # 네트워크 연결 실패, DNS 에러 등
-            print(f"[BACKEND] PaymentService.confirm > ConnectionError")
+            print(f"[BACKEND] PaymentService.__log_payment_status() > ConnectionError")
             print("> 네트워크 연결에 실패했습니다. 인터넷 연결이나 URL을 확인하세요.")
             
         except requests.exceptions.Timeout:
             # 설정한 timeout 시간 초과
-            print(f"[BACKEND] PaymentService.confirm > Timeout")
+            print(f"[BACKEND] PaymentService.__log_payment_status() > Timeout")
             print("> 요청 시간이 초과되었습니다.")
             
         except requests.exceptions.RequestException as err:
             # 기타 모든 requests 관련 에러를 처리하는 최상위 예외
-            print(f"[BACKEND] PaymentService.confirm > RequestException")
+            print(f"[BACKEND] PaymentService.__log_payment_status() > RequestException")
             print(f"> 알 수 없는 에러 발생: {err}")
 
         return response
@@ -103,11 +101,13 @@ class PaymentService:
     def __log_payment_confirm(self, result):
 
         if "status" not in result:
+            print(f"[BACKEND] PaymentService.__log_payment_confirm()")
             raise Exception(
                 f"Toss 승인 실패: {result}"
             )
 
         if result["status"] != "DONE":
+            print(f"[BACKEND] PaymentService.__log_payment_confirm()")
             raise Exception(
                 f"결제 승인 실패: {result}"
             )

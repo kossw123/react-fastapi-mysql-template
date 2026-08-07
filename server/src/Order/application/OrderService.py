@@ -63,5 +63,7 @@ class OrderService:
                     quantity=item.quantity,
                 )
                 for item in order.items
-            ]
+            ],
+            status=order.status,
+            total_price=order.total_price
         )

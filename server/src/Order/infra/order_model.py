@@ -7,4 +7,8 @@ class OrderModel(SQLModel, table=True):
                     primary_key=True)
     order_id: UUID = Field(unique=True)
     customer_id: UUID
-    model_config = ConfigDict(strict=True)  
+
+    status: str
+    total_price: int
+
+    model_config = ConfigDict(strict=True)

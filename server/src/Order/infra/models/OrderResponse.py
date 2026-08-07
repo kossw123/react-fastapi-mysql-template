@@ -6,3 +6,5 @@ class OrderResponse(BaseModel):
     order_id: UUID
     customer_id: UUID
     items: list[OrderItemResponse]
+    status: str
+    total_price: int

@@ -2,12 +2,10 @@ from uuid import UUID
 
 class OrderItem:
     def __init__(self, 
-                 order_id: UUID,
                  product_id: UUID, 
                  name: str,
-                 price: str, 
-                 quantity: str):
-        self.order_id = order_id
+                 price: int, 
+                 quantity: int):
         self.product_id = product_id
         self.price = price
         self.name = name
@@ -15,13 +13,11 @@ class OrderItem:
 
     @classmethod
     def create(cls, 
-               order_id,
                product_id,
                name,
                price, 
                quantity):
-        return cls(order_id,
-                   product_id,
+        return cls(product_id,
                    name,
                    price, 
                    quantity)

@@ -39,7 +39,7 @@ class OrderRepository():
 
     def find_by_Id(self,
                    order_id: UUID):
-        stmt = select(OrderModel).where(OrderModel.id == order_id)
+        stmt = select(OrderModel).where(OrderModel.order_id == order_id)
         return self.session.exec(stmt).first()
 
 

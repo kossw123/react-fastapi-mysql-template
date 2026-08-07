@@ -9,14 +9,13 @@ function PaymentSuccessPage() {
   const [paymentStatus, setPaymentStatus] = useState("PENDING");
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
-  const [response, setResponse] = useState(null);
   useEffect(() => {
     const confirmPayment = async () => {
       const paymentKey = params.get("paymentKey");
       const orderId = params.get("orderId");
       const amount = Number(params.get("amount"));
 
-        try {
+      try {
         // 1. 결제 승인
         const res = await axiosinstance.post("/payment/confirm", {
           paymentKey,
@@ -24,11 +23,13 @@ function PaymentSuccessPage() {
           amount,
         });
 
-        setResponse(res);
         setPaymentStatus("SUCCESS");
 
         // 2. 주문 상세 조회
         const orderResponse = await axiosinstance.get(`/order/${orderId}`);
+
+        console.log(orderResponse.data);
+        console.log(Object.keys(orderResponse.data));
 
         setOrder(orderResponse.data);
       } catch (err) {
@@ -51,8 +52,6 @@ function PaymentSuccessPage() {
     return (
       <div>
         <h1>결제 실패</h1>
-            <p>{paymentStatus}</p>
-            <p>response result : {response.data}</p>
         <p>{error}</p>
       </div>
     );
@@ -74,5 +73,3 @@ function PaymentSuccessPage() {
 }
 
 export default PaymentSuccessPage;
-
-
