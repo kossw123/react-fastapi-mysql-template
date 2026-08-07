@@ -37,7 +37,6 @@ class OrderCreateHandler(ICommandHandler):
         for item in command.request.items: 
             order_items.append(
                 OrderItem.create(
-                    order_id = order_id,
                     name = item.name,
                     product_id = item.id,
                     price = item.price, 
@@ -49,6 +48,7 @@ class OrderCreateHandler(ICommandHandler):
         order = Order.create(order_id=order_id,
                              customer_id=customer_id,
                              items=order_items)
+        
         with uow:
             uow.order_repository.save(order)
             uow.domain_register(order)

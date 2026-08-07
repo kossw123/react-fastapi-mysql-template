@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from src.Order.infra.models.OrderRequest import OrderRequest
     from uuid import UUID
 
+    from src.Order.domain.Order import Order
+    from src.Order.domain.OrderItem import OrderItem
+
 
 class OrderService:
     def __init__(self, 
@@ -51,7 +54,8 @@ class OrderService:
             self.dispatcher.dispatch(events)
 
 
-    def _to_OrderResponse(self, order):
+    def _to_OrderResponse(self, 
+                          order: Order):
         return OrderResponse(
             order_id=order.order_id,
             customer_id=order.customer_id,
@@ -65,5 +69,5 @@ class OrderService:
                 for item in order.items
             ],
             status=order.status,
-            total_price=order.total_price
+            total_price=order.calculate_total_price()
         )

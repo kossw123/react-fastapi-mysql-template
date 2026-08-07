@@ -8,7 +8,7 @@ from uuid import UUID
 
 class Order:
     def __init__(self, 
-                 order_id: UUID, 
+                 order_id: UUID,
                  customer_id: UUID, 
                  items: list[OrderItem]):
         self.root = AggregateRoot()
@@ -19,13 +19,13 @@ class Order:
 
     @classmethod
     def create(cls, 
-               order_id: UUID, 
+               order_id: UUID,
                customer_id: UUID, 
                items: list[OrderItem]):
         if not items:
             raise Exception("item is empty")
 
-        order = cls(order_id, 
+        order = cls(order_id,
                     customer_id, 
                     items)
 
@@ -35,6 +35,12 @@ class Order:
                          order.items)
         )
         return order
+
+    def calculate_total_price(self):
+        return sum(
+            item.total()
+            for item in self.items
+        )
 
     def add_item(self, 
                  item: OrderItem):  # 최초 주문 생성 이후 아이템 추가
