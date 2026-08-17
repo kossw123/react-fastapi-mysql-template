@@ -44,7 +44,6 @@ class OrderCreateHandler(ICommandHandler):
                 )
             )
 
-        # def create(cls, id, customer_id, items):
         order = Order.create(order_id=order_id,
                              customer_id=customer_id,
                              items=order_items)

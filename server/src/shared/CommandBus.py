@@ -1,10 +1,14 @@
 from typing import TYPE_CHECKING
 
+import logging
 
 if TYPE_CHECKING:
     from src.shared_interface.ICommand import ICommand
     from src.shared_interface.ICommandHandler import ICommandHandler
     from src.shared.UnitOfWork import UnitOfWork
+
+logger = logging.getLogger(__name__)
+
 
 
 class CommandBus:
@@ -19,11 +23,11 @@ class CommandBus:
     #     return handler.handle(command, uow)
 
     def dispatch(self, command: ICommand, uow: UnitOfWork = None):
-        print(f"[BACKEND] [CommandBus.py] CommandBus > dispatch: {type(command).__name__} / START")
+        logger.info(f"[BACKEND] [CommandBus.py] CommandBus > dispatch: {type(command).__name__} / START")
 
         handler = self.handlers[type(command)]
         result = handler.handle(command, uow)
 
-        print(f"[BACKEND] [CommandBus.py] CommandBus > dispatch: {type(command).__name__} / DONE")
+        logger.info(f"[BACKEND] [CommandBus.py] CommandBus > dispatch: {type(command).__name__} / DONE")
 
         return result

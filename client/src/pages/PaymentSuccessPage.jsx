@@ -30,6 +30,7 @@ function PaymentSuccessPage() {
 
         console.log(orderResponse.data);
         console.log(Object.keys(orderResponse.data));
+        console.log(Object.values(orderResponse.data));
 
         setOrder(orderResponse.data);
       } catch (err) {
