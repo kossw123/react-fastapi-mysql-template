@@ -24,5 +24,5 @@ root_logger.addHandler(loki_handler)
 
 logger = logging.getLogger(__name__)
 logger.info("===== LOKI TEST ======")
-
+logger.info("===== GRAFANA CONNECTION ======")
 app = create_app()
