@@ -52,7 +52,7 @@ class Order:
             raise Exception("order status is already SHIPPED")
         if self.status == OrderStatus.PAID:
             raise Exception("order status is already PAID")
-        order_item = OrderItem(item.product_id, item.price, item.quantity)
+        order_item = OrderItem(item.product_id, item.name, item.price, item.quantity)
         self.items.append(order_item)
 
     # def request_payment(self):  # 결제 요청
@@ -67,17 +67,17 @@ class Order:
     #     self.status = OrderStatus.PENDINGPAYMENT
     #     self.aggregate_root.register(OrderPaymentRequested(self.id, self.customer_id))
 
-    # def mark_as_paid(self):  # 결제 완료 처리
-    #     if self.status == OrderStatus.COMPLETED:
-    #         raise Exception("order status is already COMPLETED")
-    #     if self.status == OrderStatus.CANCELLED:
-    #         raise Exception("order status is already CANCELLED")
-    #     if self.status == OrderStatus.SHIPPED:
-    #         raise Exception("order status is already SHIPPED")
+    def mark_as_paid(self):  # 결제 완료 처리
+        if self.status == OrderStatus.COMPLETED:
+            raise Exception("order status is already COMPLETED")
+        if self.status == OrderStatus.CANCELLED:
+            raise Exception("order status is already CANCELLED")
+        if self.status == OrderStatus.SHIPPED:
+            raise Exception("order status is already SHIPPED")
 
-    #     self.status = OrderStatus.PAID
-    #     # total = sum(item.total() for item in self.items)
-    #     self.aggregate_root.register(OrderPaid(self.id, self.customer_id))
+        self.status = OrderStatus.PAID
+        # total = sum(item.total() for item in self.items)
+        # self.aggregate_root.register(OrderPaid(self.id, self.customer_id))
 
     # def cancel(self):  # 주문 취소
     #     if self.status == OrderStatus.COMPLETED:
