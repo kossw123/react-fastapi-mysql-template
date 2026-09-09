@@ -18,7 +18,7 @@ class IProductRepository(ABC):
     def delete(self, product_id: UUID):
         pass
 
-class SqlAlchemy_ProductRepository(IProductRepository):
+class ProductRepository(IProductRepository):
     def __init__(self, session: Session):
         self.session = session
 
@@ -38,9 +38,9 @@ class SqlAlchemy_ProductRepository(IProductRepository):
         orm = self.session.exec(statement).first()
 
         if orm is None:
-            raise Exception("[SqlAlchemy_ProductRepository.find] session.exec.fist() is null")
+            raise Exception("[ProductRepository.find] session.exec.fist() is null")
         else:
-            print(f"[SqlAlchemy_ProductRepository.find] FIND PK is {orm.id}")
+            print(f"[ProductRepository.find] FIND PK is {orm.id}")
             product = mapper._to_domain(orm)
         return product
     
@@ -60,9 +60,9 @@ class SqlAlchemy_ProductRepository(IProductRepository):
         orm = self.session.exec(statement).first()
 
         if orm is None:
-            raise Exception("[SqlAlchemy_ProductRepository.find] session.exec.fist() is null")
+            raise Exception("[ProductRepository.find] session.exec.fist() is null")
         else:
-            print(f"[SqlAlchemy_ProductRepository.find] FIND PK is {orm.id}")
+            print(f"[ProductRepository.find] FIND PK is {orm.id}")
         return orm
 
     def get_all(self):
