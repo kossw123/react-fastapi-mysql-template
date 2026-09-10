@@ -1,4 +1,5 @@
 from sqlmodel import Session
+from src.Payment.infra.payment_repository import PaymentRepository
 from src.Product.infra.product_repository import ProductRepository
 from infra.login.auth_repository import AuthRepository
 from src.Order.infra.order_repository import OrderRepository
@@ -18,6 +19,7 @@ class UnitOfWork:
         self.product_repository = ProductRepository(session)
         self.order_repository = OrderRepository(session)
         self.auth_repository = AuthRepository(session)
+        self.payment_respository = PaymentRepository(session)
 
     def domain_register(self, aggregate):
         self.seen.add(aggregate)
