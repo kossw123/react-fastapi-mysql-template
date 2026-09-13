@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from fastapi import HTTPException
 import requests
 import base64
 import os
@@ -24,7 +25,7 @@ class PaymentService:
 
         self.logger = logging.getLogger(__name__)
 
-    def confirm(self, request: PaymentConfirmRequest):
+    def arrange_confirm(self, request: PaymentConfirmRequest):
         print(request.paymentKey)
         print(request.orderId)
         print(request.amount)
@@ -50,6 +51,23 @@ class PaymentService:
             payment = self.bus.dispatch(command, self.uow)
                     
         return payment
+
+    def act_confirm(self, request: PaymentConfirmRequest):
+        payment = self.uow.payment_respository.find_by_order_id(request.order_id)
+
+        if payment is None:
+            raise HTTPException(status_code=404, detail="결제 정보가 없습니다.")
+        if payment.amount != request.amount:
+            raise HTTPException(status_code=409, detail="결제 금액이 일치하지 않습니다.")
+        if payment.payment_key is not None and payment.payment_key != request.payment_key:
+            raise HTTPException(status_code=404, detail="기존 결제키와 일치하지 않습니다.")
+        if payment.status == "COMPLETED":
+            return 200, payment.confirmation_result
+        if payment.status in { "PROCESSING", "UNKNOWN" }:
+            return 202, {
+                "status": payment.status,
+                "order_id": str(payment.order_id)
+            }
 
 
     @contextmanager

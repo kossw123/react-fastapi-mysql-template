@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
-
-from sqlmodel import select
+from datetime import datetime, timezone
+from sqlmodel import select, update
 from server.src.Payment.infra.models.PaymentModel import PaymentModel
 from uuid import UUID
 if TYPE_CHECKING:
@@ -19,23 +19,7 @@ class PaymentRepository():
         self.session.flush()
         self.session.refresh(payment_model)
         return payment
-
-
-    def create(self, 
-               order_id: UUID,
-               amount: int):
-        
-        payment = PaymentModel(
-            order_id = order_id,
-            amount = amount
-        )
-
-        self.session.add(payment)
-        self.session.flush()
-        self.session.refresh(payment)
-        return payment
-
-
+    
     def find_by_order_id(self,
                          order_id: UUID,):
          stmt = select(PaymentModel).where(PaymentModel.order_id == order_id)
@@ -43,15 +27,50 @@ class PaymentRepository():
 
 
 
+    
+    def try_start_confirmation(self, payment_id, payment_key):
+         # UPDATE payments
+         # SET
+         #   status = 'PROCESSING'
+         #   payment_key = :payment_key,
+         #   processing_started_at = :now
+         # WHERE
+         #   id = :payment_id
+         #   AND status = 'READY'
+         #   AND payment_key IS NULL;
+         stmt = update(PaymentModel).where(
+              PaymentModel.id == payment_id, 
+              PaymentModel.status == "READY", 
+              PaymentModel.payment_key.is_(None),
+              ).values(
+                   status="PROCESSING",
+                   payment_key=payment_key,
+                   processing_started_at=datetime.now(timezone.utc).replace(tzinfo=None)
+              ).execution_options(synchronize_session=False)
+
+         result = self.session.exec(stmt)
+
+         return result.rowcount == 1
+
+
+
+# id: UUID
+# order_id: UUID
+# payment_key: str 
+# amount: int
+# status: str
+# confirm_idempotency_key: str
+# confirmation_result: dict
+# processing_started_at: datetime
 
 class _Mapper():
-    def _to_orm(self, product: Payment) -> PaymentModel:
+    def _to_orm(self, payment: Payment) -> PaymentModel:
         return PaymentModel(
             ##
             ##
         )
     def _to_domain(self, orm: PaymentModel) -> Payment:
-            return PaymentModel(
+            return Payment(
                 ##
                 ##
             )

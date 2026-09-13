@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from uuid import uuid4
 from src.Payment.domain.PaymentStatus import PaymentStatus
 
+
+# frontend에서 받는 request
 class PaymentConfirmRequest(BaseModel):
     id: uuid4
     order_id: uuid4
