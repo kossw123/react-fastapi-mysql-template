@@ -7,8 +7,10 @@ from contextlib import contextmanager
 
 import logging
 
+from src.Payment.infra.TossPaymentClient import TossPaymentClient
+
 from src.Payment.domain.commands import CreatePayment
-from uuid import UUID
+from uuid import uuid4
 if TYPE_CHECKING:
     from src.shared.EventDispatcher import EventDispatcher
     from src.shared.CommandBus import CommandBus
@@ -21,15 +23,9 @@ class PaymentService:
         self.bus = bus
         self.dispatcher = dispatcher
         self.uow = uow
-        # self.mapper = _Mapper()
-
         self.logger = logging.getLogger(__name__)
 
     def arrange_confirm(self, request: PaymentConfirmRequest):
-        print(request.paymentKey)
-        print(request.orderId)
-        print(request.amount)
-
         secret_key = os.getenv("TOSS_SECRET_KEY")
         auth = base64.b64encode(
             f"{secret_key}:".encode()
@@ -40,12 +36,21 @@ class PaymentService:
         self.logger.info("===== LOKI TEST =====")
 
         self.logger.info(f"[BACKEND] PaymentService.confirm() > auth: {auth}")
+        self.logger.info(f"[BACKEND] PaymentService.confirm() > request.payment_key: {request.payment_key}")
+        self.logger.info(f"[BACKEND] PaymentService.confirm() > request.order_id: {request.order_id}")
+        self.logger.info(f"[BACKEND] PaymentService.confirm() > request.amount: {request.amount}")
 
         result = self.__log_payment_status(auth, request).json()
         
         self.__log_payment_confirm(result)
 
-        command = CreatePayment()
+        command = CreatePayment(
+            id=uuid4(),
+            order_id=request.order_id,
+            amount=request.amount,
+            status=request.status,
+            payment_key=request.payment_key,
+            )
                     
         with self._command_context():
             payment = self.bus.dispatch(command, self.uow)
@@ -68,7 +73,6 @@ class PaymentService:
                 "status": payment.status,
                 "order_id": str(payment.order_id)
             }
-
 
     @contextmanager
     def _command_context(self):

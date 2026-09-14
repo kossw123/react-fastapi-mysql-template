@@ -3,7 +3,7 @@ from src.shared_interface.ICommand import ICommand
 from src.shared_interface.ICommandHandler import ICommandHandler
 from src.Payment.domain.Payment import Payment
 
-from uuid import UUID
+from uuid import UUID, uuid4
 import logging
 
 if TYPE_CHECKING:
@@ -27,11 +27,13 @@ class CreatePayment(ICommand):       # 결제 생성
             id: UUID,
             order_id: UUID,
             amount: int,
-            status: str,):
+            status: str,
+            payment_key: str):
         self.id = id
         self.order_id = order_id
         self.amount = amount
         self.status = status
+        self.payment_key = payment_key  
 
 
 class CreatePaymentHandler(ICommandHandler):       # 결제 생성
@@ -39,8 +41,8 @@ class CreatePaymentHandler(ICommandHandler):       # 결제 생성
         logger.info(f"[BACKEND] [commands.py] COMMANDHANDLER > CreatePaymentHandler") 
         payment = Payment.create(command.order_id, command.amount)
 
-        payment_key = None
-        confirm_idempotency_key = None
+        payment_key = command.payment_key
+        confirm_idempotency_key = uuid4()
         confirmation_result = None
         processing_started_at = None
 

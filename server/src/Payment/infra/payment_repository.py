@@ -25,9 +25,6 @@ class PaymentRepository():
          stmt = select(PaymentModel).where(PaymentModel.order_id == order_id)
          return self.session.exec(stmt).first()
 
-
-
-    
     def try_start_confirmation(self, payment_id, payment_key):
          # UPDATE payments
          # SET

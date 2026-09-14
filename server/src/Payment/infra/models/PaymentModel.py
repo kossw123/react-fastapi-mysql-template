@@ -15,7 +15,6 @@ class PaymentModel(SQLModel, table=True):
             primary_key=True
     )
 
-
     payment_key: str | None = Field(
         default=None,
         max_length=200,
@@ -26,7 +25,7 @@ class PaymentModel(SQLModel, table=True):
     status: str = Field(
         default="READY"
     )
-
+    
     confirm_idempotency_key: str = Field(
         default_factory=lambda: str(uuid4()),
         max_length=36,

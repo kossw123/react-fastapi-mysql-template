@@ -10,7 +10,3 @@ class PaymentConfirmRequest(BaseModel):
     payment_key: uuid4
     amount: int
     status: PaymentStatus
-    confirm_idempotency_key: str
-    confirmation_resut: str
-    processing_started_at: str
-    updated_at: str
