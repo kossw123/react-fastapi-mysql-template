@@ -19,30 +19,41 @@ if TYPE_CHECKING:
 
 
 class PaymentService:
-    def __init__(self, bus: CommandBus, dispatcher: EventDispatcher, uow: UnitOfWork):
+    def __init__(
+            self, 
+            bus: CommandBus, 
+            dispatcher: EventDispatcher, 
+            uow: UnitOfWork,
+            toss_client: TossPaymentClient,
+            ):
         self.bus = bus
         self.dispatcher = dispatcher
         self.uow = uow
+        self.toss_client = toss_client
         self.logger = logging.getLogger(__name__)
 
+    def confirm(self, request: PaymentConfirmRequest):
+        self.arrange_confirm(request)
+        self.act_confirm(request)
+
     def arrange_confirm(self, request: PaymentConfirmRequest):
-        secret_key = os.getenv("TOSS_SECRET_KEY")
-        auth = base64.b64encode(
-            f"{secret_key}:".encode()
-            ).decode()
+        # secret_key = os.getenv("TOSS_SECRET_KEY")
+        # auth = base64.b64encode(
+        #     f"{secret_key}:".encode()
+        #     ).decode()
 
 
         self.logger = logging.getLogger(__name__)
         self.logger.info("===== LOKI TEST =====")
 
-        self.logger.info(f"[BACKEND] PaymentService.confirm() > auth: {auth}")
+        # self.logger.info(f"[BACKEND] PaymentService.confirm() > auth: {auth}")
         self.logger.info(f"[BACKEND] PaymentService.confirm() > request.payment_key: {request.payment_key}")
         self.logger.info(f"[BACKEND] PaymentService.confirm() > request.order_id: {request.order_id}")
         self.logger.info(f"[BACKEND] PaymentService.confirm() > request.amount: {request.amount}")
 
-        result = self.__log_payment_status(auth, request).json()
+        # result = self.__log_payment_status(auth, request).json()
         
-        self.__log_payment_confirm(result)
+        # self.__log_payment_confirm(result)
 
         command = CreatePayment(
             id=uuid4(),
@@ -58,21 +69,53 @@ class PaymentService:
         return payment
 
     def act_confirm(self, request: PaymentConfirmRequest):
-        payment = self.uow.payment_respository.find_by_order_id(request.order_id)
+            # 반드시 먼저 수행할 것:
+            # - 주문 소유자와 결제 가능 상태 검증
+            # - payment 존재 여부 확인
+            # - amount와 payment_key 일치 여부 확인
+            # - COMPLETED면 기존 결과 반환
+            # - PROCESSING / UNKNOWN이면 처리 중 응답
+            # - READY 이외의 상태는 승인 시작 금지
 
-        if payment is None:
-            raise HTTPException(status_code=404, detail="결제 정보가 없습니다.")
-        if payment.amount != request.amount:
-            raise HTTPException(status_code=409, detail="결제 금액이 일치하지 않습니다.")
-        if payment.payment_key is not None and payment.payment_key != request.payment_key:
-            raise HTTPException(status_code=404, detail="기존 결제키와 일치하지 않습니다.")
-        if payment.status == "COMPLETED":
-            return 200, payment.confirmation_result
-        if payment.status in { "PROCESSING", "UNKNOWN" }:
-            return 202, {
-                "status": payment.status,
-                "order_id": str(payment.order_id)
+        with self.uow:
+            repo = self.uow.payment_respository
+            payment = self.uow.payment_respository.find_by_order_id(request.order_id)
+
+            if request.order_id == None:
+                raise ValueError("order_id가 없습니다.")
+            if request.status is not "READY":
+                raise ValueError("결제 준비 상태가 아닙니다.")
+            if payment is None:
+                raise HTTPException(status_code=404, detail="결제 정보가 없습니다.")
+            if payment.amount != request.amount:
+                raise HTTPException(status_code=409, detail="결제 금액이 일치하지 않습니다.")
+            if payment.payment_key is not None and payment.payment_key != request.payment_key:
+                raise HTTPException(status_code=404, detail="기존 결제키와 일치하지 않습니다.")
+            if payment.status == "COMPLETED":
+                return 200, payment.confirmation_result
+            if payment.status in { "PROCESSING", "UNKNOWN" }:
+                return 202, {
+                    "status": payment.status,
+                    "order_id": str(payment.order_id)
+                }
+
+            payment_id = payment.id
+            toss_arguments = { 
+                "payment_key": request.payment_key,
+                "order_id": str(payment.order_id),
+                "amount": payment.amount,
+                "idempotency_key": payment.confirm_idempotency_key,
             }
+
+            acquired = repo.try_start_confirmation(
+                payment_id=payment_id,
+                payment_key=request.payment_key
+            )
+
+            if acquired:
+                result = self.toss_client.confirm(**toss_arguments)
+
+
 
     @contextmanager
     def _command_context(self):

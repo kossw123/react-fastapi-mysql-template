@@ -1,11 +1,12 @@
+import os
 from fastapi import APIRouter, Depends
 from infra.database import get_uow
 from src.Payment.application.PaymentService import PaymentService
-from src.Product.infra.product_repository import ProductModel
 from src.shared.UnitOfWork import UnitOfWork
 from src.toy_bootstrap import container
 from infra.database import verify_access_token
 from src.Payment.infra.models.PaymentConfirmRequest import PaymentConfirmRequest
+from src.Payment.infra.TossPaymentClient import TossPaymentClient
 
 
 payment_router = APIRouter(prefix="/payment", tags=["payment"], dependencies=[
@@ -19,6 +20,9 @@ def confirm(request: PaymentConfirmRequest,
         print(f"data : {request}")
         bus = container["COMMAND_BUS"]
         dispatcher = container["EVENT_DISPATCHER"]
-        service = PaymentService(bus, dispatcher, uow)
+        toss_client = TossPaymentClient(
+                secret_key=os.environ("TOSS_SECRET_KEY")
+        )
+        service = PaymentService(bus, dispatcher, uow, toss_client)
 
         return service.confirm(request)

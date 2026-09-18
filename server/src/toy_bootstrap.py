@@ -22,7 +22,7 @@ from src.Payment.domain.commands import (
     CreatePayment, CreatePaymentHandler
 )
 from src.Payment.domain.events import (
-    CreatedPayment, CreatedPaymentHandler
+    PaymentCreated, PaymentCreatedHandler
 )
 
 
@@ -51,7 +51,7 @@ event_dispatcher.register(ProductDiscontinued, ProductDiscontinuedHandler())
 event_dispatcher.register(OrderCreated, OrderCreatedHandler())
 
 ## Payment
-event_dispatcher.register(CreatedPayment, CreatedPaymentHandler())
+event_dispatcher.register(PaymentCreated, PaymentCreatedHandler())
 
 container = {
     "EVENT_DISPATCHER": event_dispatcher,

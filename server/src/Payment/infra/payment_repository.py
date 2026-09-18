@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import select, update
-from server.src.Payment.infra.models.PaymentModel import PaymentModel
+from src.Payment.infra.models.PaymentModel import PaymentModel
 from uuid import UUID
 if TYPE_CHECKING:
     from sqlmodel import Session
@@ -63,8 +63,14 @@ class PaymentRepository():
 class _Mapper():
     def _to_orm(self, payment: Payment) -> PaymentModel:
         return PaymentModel(
-            ##
-            ##
+            id=payment.id,
+            order_id=payment.order_id,
+            payment_key=payment.payment_key,
+            amount=payment.amount,
+            status=payment.status,
+            confirm_idempotency_key=(payment.confirm_idempotency_key),
+            confirmation_result=payment.confirmmation_result,
+            processing_started_at=payment.processing_started_at,
         )
     def _to_domain(self, orm: PaymentModel) -> Payment:
             return Payment(

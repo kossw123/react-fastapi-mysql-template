@@ -41,11 +41,6 @@ class CreatePaymentHandler(ICommandHandler):       # 결제 생성
         logger.info(f"[BACKEND] [commands.py] COMMANDHANDLER > CreatePaymentHandler") 
         payment = Payment.create(command.order_id, command.amount)
 
-        payment_key = command.payment_key
-        confirm_idempotency_key = uuid4()
-        confirmation_result = None
-        processing_started_at = None
-
         with uow:
             uow.payment_respository.save(payment)
             uow.domain_register(payment)

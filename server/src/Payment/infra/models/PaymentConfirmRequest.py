@@ -1,12 +1,15 @@
-from pydantic import BaseModel
-from uuid import uuid4
+from pydantic import BaseModel, Field
+from uuid import UUID
 from src.Payment.domain.PaymentStatus import PaymentStatus
 
 
 # frontend에서 받는 request
 class PaymentConfirmRequest(BaseModel):
-    id: uuid4
-    order_id: uuid4
-    payment_key: uuid4
-    amount: int
+    order_id: UUID = Field(alias="orderId")
+    payment_key: str = Field(
+        alias="paymentKey",
+        min_length=1,
+        max_length=200,
+    )
+    amount: int = Field(gt=0)
     status: PaymentStatus

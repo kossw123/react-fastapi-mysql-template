@@ -11,8 +11,8 @@ class PaymentModel(SQLModel, table=True):
         primary_key=True
     )
     order_id: UUID = Field(
-            default_factory= uuid4,
-            primary_key=True
+            unique=True,
+            index=True,
     )
 
     payment_key: str | None = Field(
@@ -27,7 +27,6 @@ class PaymentModel(SQLModel, table=True):
     )
     
     confirm_idempotency_key: str = Field(
-        default_factory=lambda: str(uuid4()),
         max_length=36,
         unique=True,
     )

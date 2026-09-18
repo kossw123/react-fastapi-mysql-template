@@ -12,6 +12,11 @@ class Payment():
         self.amount: int = 0
         self.status: str = PaymentStatus.NONE
 
+        self.payment_key: str = None
+        self.confirm_idempotency_key: str = None
+        self.processing_started_at = None
+        
+
 
     @classmethod
     def create(cls, order_id: UUID, amount: int):
@@ -20,6 +25,7 @@ class Payment():
 
         payment = cls(order_id, amount)
         payment.status = PaymentStatus.READY
+        payment.confirm_idempotency_key = str(uuid4())
         payment.root.register(PaymentCreated())
         return payment
 
