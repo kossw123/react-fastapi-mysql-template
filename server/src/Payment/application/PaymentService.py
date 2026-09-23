@@ -1,9 +1,8 @@
+import requests
 from typing import TYPE_CHECKING
 from fastapi import HTTPException
-import requests
-import base64
-import os
 from contextlib import contextmanager
+from src.Payment.infra.models.PreparedConfirmation import PreparedConfirmation
 
 import logging
 
@@ -115,6 +114,7 @@ class PaymentService:
             if acquired:
                 result = self.toss_client.confirm(**toss_arguments)
 
+        return result
 
 
     @contextmanager
@@ -184,3 +184,122 @@ class PaymentService:
             raise Exception(
                 f"결제 승인 실패: {result}"
             )
+
+
+    def prepare_confirmation(self, request: PaymentConfirmRequest):
+        repo = self.uow.payment_respository
+        payment = repo.find_by_order_id(request.order_id)
+
+        if payment is None:
+            raise HTTPException(
+                status_code=404,
+                detail="결제 준비 기록이 없습니다.",
+            )
+
+        self._validate_confirmation_request(payment, request)
+
+        existing = self._existing_confirmation_result(payment)
+
+        if existing is not None:
+            return existing
+
+        if payment.payment_key is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="결제 상태 확인이 필요합니다."
+            )
+
+        if not payment.confirm_idempotency_key:
+            raise RuntimeError("저장된 승인 멱등키가 없습니다.")
+
+        payment_id = payment.id
+
+        toss_arguments = {
+            "payment_key": request.payment_key,
+            "order_id": str(payment.order_id),
+            "amount": payment.amount,
+            "idempotency_key": payment.confirm_idempotency_key,
+        }
+
+        acquired = repo.try_start_confirmation(payment_id, request.payment_key)
+
+        if acquired:
+            return PreparedConfirmation(
+                payment_id=payment_id,
+                acquired=True,
+                toss_arguments=toss_arguments
+            )
+
+        current = repo.find_by_order_id(
+            request.order_id,
+            for_update=True
+        )
+
+        if current is None:
+            raise HTTPException(
+                status_code=404,
+                detail="결제 기록이 없습니다."
+            )
+
+        self._validate_confirmation_request(current, request)
+
+        existing = self._exsiting_confirmation_result(current)
+
+        if existing is not None:
+            return existing
+
+        raise HTTPException(
+            status_code=409,
+            detail="결제 상태 확인이 필요합니다."
+        )
+
+
+    def _validate_confirmation_request(self, payment, request):
+        if payment.amount != request.amount:
+            raise HTTPException(
+                status_code=409,
+                detail="결제 금액이 일치하지 않습니다.",
+            )
+
+        if (
+            payment.payment_key is not None
+            and payment.payment_key != request.payment_key
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail="기존 결제키와 일치하지 않습니다.",
+            )
+
+    def _existing_confirmation_result(self, payment):
+        if payment.status == "COMPLETED":
+            if payment.confirmation_result is None:
+                raise RuntimeError(
+                    "완료된 결제의 승인 결과가 없습니다."
+                )
+
+            return PreparedConfirmation(
+                payment_id=payment.id,
+                acquired=False,
+                response_status=200,
+                response_body=dict(payment.confirmation_result),
+            )
+
+        if payment.status in {"PROCESSING", "UNKNOWN"}:
+            return PreparedConfirmation(
+                payment_id=payment.id,
+                acquired=False,
+                response_status=202,
+                response_body={
+                    "status": payment.status,
+                    "orderId": str(payment.order_id),
+                },
+            )
+
+        if payment.status == "READY":
+            return None
+
+        # FAILED 등은 이 경로에서 새 승인으로 재시작하지 않음
+        raise HTTPException(
+            status_code=409,
+            detail="승인을 시작할 수 없는 결제 상태입니다.",
+        )

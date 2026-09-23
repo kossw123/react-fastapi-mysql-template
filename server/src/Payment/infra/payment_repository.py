@@ -21,8 +21,17 @@ class PaymentRepository():
         return payment
     
     def find_by_order_id(self,
-                         order_id: UUID,):
+                         order_id: UUID,
+                         *,
+                         for_update: bool,) -> PaymentModel | None:
+
+         
          stmt = select(PaymentModel).where(PaymentModel.order_id == order_id)
+
+         if for_update:
+              stmt = stmt.with_for_update()
+         stmt = stmt.execution_options(populate_existing=True)
+
          return self.session.exec(stmt).first()
 
     def try_start_confirmation(self, payment_id, payment_key):
