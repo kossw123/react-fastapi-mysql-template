@@ -5,7 +5,9 @@ from src.Order.infra.models.OrderResponse import OrderResponse
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 from src.Order.infra.models.OrderItemResponse import OrderItemResponse
-
+from src.Payment.domain.commands import CreatePayment
+from src.Payment.domain.PaymentStatus import PaymentStatus
+from uuid import uuid4
 if TYPE_CHECKING:
     from src.shared.CommandBus import CommandBus
     from src.shared.EventDispatcher import EventDispatcher
@@ -25,13 +27,20 @@ class OrderService:
         self.bus = command_bus
         self.dispatcher = dispatcher
         self.uow = uow
-
+ 
     def create_order(self, 
                     request: OrderRequest):
-        command = OrderCreate(request)
-
+        order_command = OrderCreate(request)
+        
         with self._command_context():
-            order = self.bus.dispatch(command, self.uow)
+            order = self.bus.dispatch(order_command, self.uow)
+            payment_command = CreatePayment(
+                        id=uuid4(),
+                        order_id=order.order_id,
+                        amount=order.calculate_total_price(),
+                        status=PaymentStatus.READY,
+                        payment_key=None)
+            self.bus.dispatch(payment_command, self.uow)
         return self._to_OrderResponse(order)
 
     def find_by_id(self,
@@ -52,7 +61,7 @@ class OrderService:
             if not events:
                 break
             self.dispatcher.dispatch(events)
-
+ 
 
     def _to_OrderResponse(self, 
                           order: Order):

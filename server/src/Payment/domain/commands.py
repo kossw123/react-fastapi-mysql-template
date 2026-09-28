@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from src.shared_interface.ICommand import ICommand
 from src.shared_interface.ICommandHandler import ICommandHandler
 from src.Payment.domain.Payment import Payment
-
+from dataclasses import dataclass
 from uuid import UUID, uuid4
 import logging
 
@@ -22,19 +22,14 @@ logger = logging.getLogger(__name__)
 # confirm_idempotency_key: str
 # confirmation_result: dict
 # processing_started_at: datetime
+@dataclass(frozen=True)
 class CreatePayment(ICommand):       # 결제 생성
-    def __init__(self,
-            id: UUID,
-            order_id: UUID,
-            amount: int,
-            status: str,
-            payment_key: str):
-        self.id = id
-        self.order_id = order_id
-        self.amount = amount
-        self.status = status
-        self.payment_key = payment_key  
-
+    id: UUID
+    order_id: UUID
+    amount: int
+    status: str
+    payment_key: str | None
+ 
 
 class CreatePaymentHandler(ICommandHandler):       # 결제 생성
     def handle(self, command: CreatePayment, uow: UnitOfWork):

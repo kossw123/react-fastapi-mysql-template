@@ -5,16 +5,25 @@ from uuid import uuid4, UUID
 from src.Payment.domain.events import PaymentCreated
 
 class Payment(): 
-    def __init__(self):
+    def __init__(
+        self,
+        order_id: UUID,
+        amount: int,
+        status: str,
+        payment_key: str | None,
+        confirm_idempotency_key: str | None,
+        confirmation_result: None,
+    ):
         self.root = AggregateRoot()
         self.id: UUID = uuid4()
-        self.order_id: UUID = uuid4()
-        self.amount: int = 0
-        self.status: str = PaymentStatus.NONE
 
-        self.payment_key: str = None
-        self.confirm_idempotency_key: str = None
+        self.order_id = order_id
+        self.amount = amount
+        self.status = status
+        self.payment_key = payment_key
+        self.confirm_idempotency_key = confirm_idempotency_key
         self.processing_started_at = None
+        self.confirmation_result = None
         
 
 
@@ -23,34 +32,54 @@ class Payment():
         if amount <= 0:
             raise ValueError("결제 금액은 0보다 커야 합니다.")
 
-        payment = cls(order_id, amount)
-        payment.status = PaymentStatus.READY
-        payment.confirm_idempotency_key = str(uuid4())
+        payment = cls(
+            order_id=order_id,
+            amount=amount,
+            status=PaymentStatus.READY,
+            payment_key=None,
+            confirm_idempotency_key=str(uuid4()),
+            confirmation_result=None
+        )
+
         payment.root.register(PaymentCreated())
+
         return payment
 
 
+    @classmethod
+    def prepare(cls, order_id: UUID, amount: int):
+        if amount <= 0:
+            raise ValueError("결제 금액은 0보다 커야 합니다.")
+
+        return cls(
+            order_id=order_id,
+            status=PaymentStatus.READY,
+            amount=amount,
+            payment_key=None,
+        )
+
+
     def ready(self):
-        if self.status is "PROCESSING":
+        if self.status == "PROCESSING":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "COMPLETED":
+        if self.status == "COMPLETED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "FAILED":
+        if self.status == "FAILED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "UNKNOWN":
+        if self.status == "UNKNOWN":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
 
         self.status = PaymentStatus.READY
         self.root.register(PaymentCreated())
 
     def processing(self):   # 승인 작업을 진행중
-        if self.status is "READY":
+        if self.status == "READY":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "COMPLETED":
+        if self.status == "COMPLETED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "FAILED":
+        if self.status == "FAILED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "UNKNOWN":
+        if self.status == "UNKNOWN":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
 
         self.status = PaymentStatus.PROCESSING
@@ -58,25 +87,25 @@ class Payment():
 
         
     def completed(self):    # 승인 성공을 확인하고 DB에도 반영함
-        if self.status is "READY":
+        if self.status == "READY":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "PROCESSING":
+        if self.status == "PROCESSING":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "FAILED":
+        if self.status == "FAILED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "UNKNOWN":
+        if self.status == "UNKNOWN":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
 
         self.status = PaymentStatus.COMPLETED
         # self.root.register(CreatedPayment())
     def failed(self):       # 승인 실패가 확정됨
-        if self.status is "READY":
+        if self.status == "READY":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "PROCESSING":
+        if self.status == "PROCESSING":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "COMPLETED":
+        if self.status == "COMPLETED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "UNKNOWN":
+        if self.status == "UNKNOWN":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
 
         self.status = PaymentStatus.FAILED
@@ -84,13 +113,13 @@ class Payment():
 
 
     def unknown(self):     # 요청은 했지만 승인 결과를 확정하지 못함
-        if self.status is "READY":
+        if self.status == "READY":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "PROCESSING":
+        if self.status == "PROCESSING":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "COMPLETED":
+        if self.status == "COMPLETED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
-        if self.status is "FAILED":
+        if self.status == "FAILED":
             raise Exception(f"Not Confirm Payment, Current status is {self.status}")
 
         self.status = PaymentStatus.UNKNOWN

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from fastapi import HTTPException
 from contextlib import contextmanager
 from src.Payment.infra.models.PreparedConfirmation import PreparedConfirmation
+from src.Payment.domain.PaymentStatus import PaymentStatus
 
 import logging
 
@@ -32,7 +33,7 @@ class PaymentService:
         self.logger = logging.getLogger(__name__)
 
     def confirm(self, request: PaymentConfirmRequest):
-        self.arrange_confirm(request)
+        
         self.act_confirm(request)
 
     def arrange_confirm(self, request: PaymentConfirmRequest):
@@ -40,7 +41,6 @@ class PaymentService:
         # auth = base64.b64encode(
         #     f"{secret_key}:".encode()
         #     ).decode()
-
 
         self.logger = logging.getLogger(__name__)
         self.logger.info("===== LOKI TEST =====")
@@ -62,10 +62,7 @@ class PaymentService:
             payment_key=request.payment_key,
             )
                     
-        with self._command_context():
-            payment = self.bus.dispatch(command, self.uow)
-                    
-        return payment
+        return command
 
     def act_confirm(self, request: PaymentConfirmRequest):
             # 반드시 먼저 수행할 것:
@@ -76,19 +73,22 @@ class PaymentService:
             # - PROCESSING / UNKNOWN이면 처리 중 응답
             # - READY 이외의 상태는 승인 시작 금지
 
+        command = self.arrange_confirm(request)
+
         with self.uow:
+            
             repo = self.uow.payment_respository
             payment = self.uow.payment_respository.find_by_order_id(request.order_id)
 
             if request.order_id == None:
                 raise ValueError("order_id가 없습니다.")
-            if request.status is not "READY":
+            if request.status != "READY":
                 raise ValueError("결제 준비 상태가 아닙니다.")
             if payment is None:
                 raise HTTPException(status_code=404, detail="결제 정보가 없습니다.")
             if payment.amount != request.amount:
                 raise HTTPException(status_code=409, detail="결제 금액이 일치하지 않습니다.")
-            if payment.payment_key is not None and payment.payment_key != request.payment_key:
+            if payment.payment_key != None and payment.payment_key != request.payment_key:
                 raise HTTPException(status_code=404, detail="기존 결제키와 일치하지 않습니다.")
             if payment.status == "COMPLETED":
                 return 200, payment.confirmation_result
@@ -113,8 +113,16 @@ class PaymentService:
 
             if acquired:
                 result = self.toss_client.confirm(**toss_arguments)
+                if result is None:
+                    raise ValueError("토스에서 반환받은 승인 결과물이 없습니다.")
+                payment.status = PaymentStatus.COMPLETE
+                payment.confirmation_result = result
 
-        return result
+
+        with self._command_context():
+                    payment = self.bus.dispatch(command, self.uow)
+                            
+        return payment
 
 
     @contextmanager

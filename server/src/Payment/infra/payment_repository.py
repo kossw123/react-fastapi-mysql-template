@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from sqlmodel import Session
     from src.Payment.domain.Payment import Payment
 
-
+ 
 class PaymentRepository():
     def __init__(self, session: Session):
         self.session = session
@@ -78,7 +78,7 @@ class _Mapper():
             amount=payment.amount,
             status=payment.status,
             confirm_idempotency_key=(payment.confirm_idempotency_key),
-            confirmation_result=payment.confirmmation_result,
+            confirmation_result=payment.confirmation_result,
             processing_started_at=payment.processing_started_at,
         )
     def _to_domain(self, orm: PaymentModel) -> Payment:

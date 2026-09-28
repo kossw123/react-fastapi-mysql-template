@@ -22,7 +22,7 @@ class OrderCreate(ICommand):
 class OrderCreateHandler(ICommandHandler):
     def handle(self, 
                command: OrderCreate,
-               uow: UnitOfWork):
+               uow: UnitOfWork) -> Order:
         order_items = []
         order_id = uuid4()
         customer_id = uuid4()
