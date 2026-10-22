@@ -27,9 +27,8 @@ class CreatePayment(ICommand):       # 결제 생성
     id: UUID
     order_id: UUID
     amount: int
-    status: str
     payment_key: str | None
- 
+
 
 class CreatePaymentHandler(ICommandHandler):       # 결제 생성
     def handle(self, command: CreatePayment, uow: UnitOfWork):

@@ -38,9 +38,8 @@ class OrderService:
                         id=uuid4(),
                         order_id=order.order_id,
                         amount=order.calculate_total_price(),
-                        status=PaymentStatus.READY,
-                        payment_key=None)
-            self.bus.dispatch(payment_command, self.uow)
+                        payment_key=None)   
+            self.bus.dispatch(payment_command, self.uow) # handler에서 handle()을 통해 반환되는 결과물은 Payment domain이다. 
         return self._to_OrderResponse(order)
 
     def find_by_id(self,

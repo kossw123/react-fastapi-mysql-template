@@ -33,7 +33,6 @@ class PaymentService:
         self.logger = logging.getLogger(__name__)
 
     def confirm(self, request: PaymentConfirmRequest):
-        
         self.act_confirm(request)
 
     def arrange_confirm(self, request: PaymentConfirmRequest):
@@ -55,11 +54,11 @@ class PaymentService:
         # self.__log_payment_confirm(result)
 
         command = CreatePayment(
-            id=uuid4(),
-            order_id=request.order_id,
-            amount=request.amount,
-            status=request.status,
-            payment_key=request.payment_key,
+                id=uuid4(),
+                order_id=request.order_id,
+                amount=request.amount,
+                status=request.status,
+                payment_key=request.payment_key,
             )
                     
         return command
@@ -73,16 +72,16 @@ class PaymentService:
             # - PROCESSING / UNKNOWN이면 처리 중 응답
             # - READY 이외의 상태는 승인 시작 금지
 
-        command = self.arrange_confirm(request)
+        # command = self.arrange_confirm(request)
 
         with self.uow:
             
             repo = self.uow.payment_respository
-            payment = self.uow.payment_respository.find_by_order_id(request.order_id)
+            payment = self.uow.payment_respository.find_by_order_id(request.order_id, for_update=False)
 
             if request.order_id == None:
                 raise ValueError("order_id가 없습니다.")
-            if request.status != "READY":
+            if payment.status != "READY":
                 raise ValueError("결제 준비 상태가 아닙니다.")
             if payment is None:
                 raise HTTPException(status_code=404, detail="결제 정보가 없습니다.")
@@ -90,6 +89,8 @@ class PaymentService:
                 raise HTTPException(status_code=409, detail="결제 금액이 일치하지 않습니다.")
             if payment.payment_key != None and payment.payment_key != request.payment_key:
                 raise HTTPException(status_code=404, detail="기존 결제키와 일치하지 않습니다.")
+            if payment.status != "READY":
+                raise ValueError(status_doce=404, detail="현재 결제 주문 준비가 되지 않았습니다.")
             if payment.status == "COMPLETED":
                 return 200, payment.confirmation_result
             if payment.status in { "PROCESSING", "UNKNOWN" }:
@@ -118,9 +119,8 @@ class PaymentService:
                 payment.status = PaymentStatus.COMPLETE
                 payment.confirmation_result = result
 
-
         with self._command_context():
-                    payment = self.bus.dispatch(command, self.uow)
+            payment = self.bus.dispatch(command, self.uow)
                             
         return payment
 

@@ -21,7 +21,7 @@ def confirm(request: PaymentConfirmRequest,
         bus = container["COMMAND_BUS"]
         dispatcher = container["EVENT_DISPATCHER"]
         toss_client = TossPaymentClient(
-            secret_key=os.environ("TOSS_SECRET_KEY")
+            secret_key=os.getenv("TOSS_SECRET_KEY")
         )
         service = PaymentService(bus, dispatcher, uow, toss_client)
 
