@@ -33,35 +33,10 @@ class PaymentService:
         self.logger = logging.getLogger(__name__)
 
     def confirm(self, request: PaymentConfirmRequest):
-        self.act_confirm(request)
+        return self.act_confirm(request)
 
-    def arrange_confirm(self, request: PaymentConfirmRequest):
-        # secret_key = os.getenv("TOSS_SECRET_KEY")
-        # auth = base64.b64encode(
-        #     f"{secret_key}:".encode()
-        #     ).decode()
 
-        self.logger = logging.getLogger(__name__)
-        self.logger.info("===== LOKI TEST =====")
-
-        # self.logger.info(f"[BACKEND] PaymentService.confirm() > auth: {auth}")
-        self.logger.info(f"[BACKEND] PaymentService.confirm() > request.payment_key: {request.payment_key}")
-        self.logger.info(f"[BACKEND] PaymentService.confirm() > request.order_id: {request.order_id}")
-        self.logger.info(f"[BACKEND] PaymentService.confirm() > request.amount: {request.amount}")
-
-        # result = self.__log_payment_status(auth, request).json()
         
-        # self.__log_payment_confirm(result)
-
-        command = CreatePayment(
-                id=uuid4(),
-                order_id=request.order_id,
-                amount=request.amount,
-                status=request.status,
-                payment_key=request.payment_key,
-            )
-                    
-        return command
 
     def act_confirm(self, request: PaymentConfirmRequest):
             # 반드시 먼저 수행할 것:
@@ -71,33 +46,34 @@ class PaymentService:
             # - COMPLETED면 기존 결과 반환
             # - PROCESSING / UNKNOWN이면 처리 중 응답
             # - READY 이외의 상태는 승인 시작 금지
-
-        # command = self.arrange_confirm(request)
+        repo = self.uow.payment_respository
 
         with self.uow:
-            
-            repo = self.uow.payment_respository
-            payment = self.uow.payment_respository.find_by_order_id(request.order_id, for_update=False)
-
+            self.logger.info("[CONFIRM] Payment searching start...")    
+            payment = repo.find_by_order_id(request.order_id, for_update=True)
+            self.logger.info(f"[CONFIRM] Payment Searching result : {payment}")
+            self.logger.info(f"[CONFIRM] Payment status : {payment.status if payment else None}")
+            self.logger.info(f"[CONFIRM] Confirm Start...")
             if request.order_id == None:
                 raise ValueError("order_id가 없습니다.")
-            if payment.status != "READY":
-                raise ValueError("결제 준비 상태가 아닙니다.")
             if payment is None:
                 raise HTTPException(status_code=404, detail="결제 정보가 없습니다.")
-            if payment.amount != request.amount:
-                raise HTTPException(status_code=409, detail="결제 금액이 일치하지 않습니다.")
-            if payment.payment_key != None and payment.payment_key != request.payment_key:
-                raise HTTPException(status_code=404, detail="기존 결제키와 일치하지 않습니다.")
-            if payment.status != "READY":
-                raise ValueError(status_doce=404, detail="현재 결제 주문 준비가 되지 않았습니다.")
-            if payment.status == "COMPLETED":
+            if payment.status == PaymentStatus.COMPLETED:
                 return 200, payment.confirmation_result
-            if payment.status in { "PROCESSING", "UNKNOWN" }:
+            if payment.status in { PaymentStatus.PROCESSING, PaymentStatus.UNKNOWN }:
                 return 202, {
                     "status": payment.status,
                     "order_id": str(payment.order_id)
                 }
+            if payment.status != PaymentStatus.READY:
+                raise ValueError("결제 준비 상태가 아닙니다.")
+            if payment.amount != request.amount:
+                raise HTTPException(status_code=409, detail="결제 금액이 일치하지 않습니다.")
+            if payment.payment_key != None and payment.payment_key != request.payment_key:
+                raise HTTPException(status_code=404, detail="기존 결제키와 일치하지 않습니다.")
+
+
+            # region --- outer API calling
 
             payment_id = payment.id
             toss_arguments = { 
@@ -116,12 +92,12 @@ class PaymentService:
                 result = self.toss_client.confirm(**toss_arguments)
                 if result is None:
                     raise ValueError("토스에서 반환받은 승인 결과물이 없습니다.")
-                payment.status = PaymentStatus.COMPLETE
+                payment.status = PaymentStatus.COMPLETED
                 payment.confirmation_result = result
 
-        with self._command_context():
-            payment = self.bus.dispatch(command, self.uow)
-                            
+                self.logger.info(f"[CONFIRM] Toss Confirm result : {result}")
+
+        # endregion --- outer API calling
         return payment
 
 
@@ -279,7 +255,7 @@ class PaymentService:
             )
 
     def _existing_confirmation_result(self, payment):
-        if payment.status == "COMPLETED":
+        if payment.status == PaymentStatus.COMPLETED:
             if payment.confirmation_result is None:
                 raise RuntimeError(
                     "완료된 결제의 승인 결과가 없습니다."
@@ -303,7 +279,7 @@ class PaymentService:
                 },
             )
 
-        if payment.status == "READY":
+        if payment.status == PaymentStatus.READY:
             return None
 
         # FAILED 등은 이 경로에서 새 승인으로 재시작하지 않음

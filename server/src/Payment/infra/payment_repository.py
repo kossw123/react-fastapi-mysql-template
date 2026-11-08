@@ -3,9 +3,10 @@ from datetime import datetime, timezone
 from sqlmodel import select, update
 from src.Payment.infra.models.PaymentModel import PaymentModel
 from uuid import UUID
+from src.Payment.domain.Payment import Payment
 if TYPE_CHECKING:
     from sqlmodel import Session
-    from src.Payment.domain.Payment import Payment
+    
 
  
 class PaymentRepository():
@@ -14,7 +15,7 @@ class PaymentRepository():
         self._mapper = _Mapper()
     def save(self, 
              payment: Payment) -> Payment:
-        payment_model = self._mapper._to_orm(payment)
+        payment_model = self._mapper._to_model(payment)
         self.session.add(payment_model)
         self.session.flush()
         self.session.refresh(payment_model)
@@ -23,16 +24,19 @@ class PaymentRepository():
     def find_by_order_id(self,
                          order_id: UUID,
                          *,
-                         for_update: bool,) -> PaymentModel | None:
-
-         
+                         for_update: bool,) -> Payment | None:
          stmt = select(PaymentModel).where(PaymentModel.order_id == order_id)
 
          if for_update:
               stmt = stmt.with_for_update()
          stmt = stmt.execution_options(populate_existing=True)
 
-         return self.session.exec(stmt).first()
+         model = self.session.exec(stmt).first()
+
+         if model is None:
+              return None
+
+         return self._mapper._to_domain(model)
 
     def try_start_confirmation(self, payment_id, payment_key):
          # UPDATE payments
@@ -51,26 +55,15 @@ class PaymentRepository():
               ).values(
                    status="PROCESSING",
                    payment_key=payment_key,
-                   processing_started_at=datetime.now(timezone.utc).replace(tzinfo=None)
+                   processing_started_at=datetime.now(timezone.utc)
               ).execution_options(synchronize_session=False)
 
          result = self.session.exec(stmt)
 
          return result.rowcount == 1
 
-
-
-# id: UUID
-# order_id: UUID
-# payment_key: str 
-# amount: int
-# status: str
-# confirm_idempotency_key: str
-# confirmation_result: dict
-# processing_started_at: datetime
-
 class _Mapper():
-    def _to_orm(self, payment: Payment) -> PaymentModel:
+    def _to_model(self, payment: Payment) -> PaymentModel:
         return PaymentModel(
             id=payment.id,
             order_id=payment.order_id,
@@ -81,8 +74,13 @@ class _Mapper():
             confirmation_result=payment.confirmation_result,
             processing_started_at=payment.processing_started_at,
         )
+
     def _to_domain(self, orm: PaymentModel) -> Payment:
             return Payment(
-                ##
-                ##
+                order_id=orm.order_id,
+                amount=orm.amount,
+                status=orm.status,
+                payment_key=orm.payment_key,
+                confirm_idempotency_key=orm.confirm_idempotency_key,
+                confirmation_result=orm.confirmation_result,
             )

@@ -23,3 +23,5 @@ class OrderCreatedHandler(IEventHandler):
         print("   현재 주문된 내역")
         for item in event.items:
             print(f"      Product_id:{item.product_id} | Quantity:{item.quantity} | total:{item.total()}")
+
+        

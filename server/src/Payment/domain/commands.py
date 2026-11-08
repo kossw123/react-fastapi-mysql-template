@@ -29,22 +29,65 @@ class CreatePayment(ICommand):       # 결제 생성
     amount: int
     payment_key: str | None
 
+class CreatePaymentHandler(ICommandHandler):
 
-class CreatePaymentHandler(ICommandHandler):       # 결제 생성
     def handle(self, command: CreatePayment, uow: UnitOfWork):
-        logger.info(f"[BACKEND] [commands.py] COMMANDHANDLER > CreatePaymentHandler") 
-        payment = Payment.create(command.order_id, command.amount)
+
+        logger.info("[CreatePaymentHandler] handle start...")
+
+        repo = uow.payment_respository
 
         with uow:
-            uow.payment_respository.save(payment)
+
+            # 1. 기존 Payment 조회
+            payment = repo.find_by_order_id(
+                command.order_id,
+                for_update=True
+            )
+
+            # 2. 이미 Payment가 존재하면 기존 객체 반환
+            if payment is not None:
+                logger.info(
+                    f"[CreatePaymentHandler] "
+                    f"Existing Payment: {payment.id}"
+                )
+                return payment
+
+            # 3. Payment가 없다면 새 도메인 객체 생성
+            payment = Payment.create(
+                order_id=command.order_id,
+                amount=command.amount,
+            )
+
+            logger.info(
+                f"[CreatePaymentHandler] "
+                f"New Payment ID: {payment.id}"
+            )
+
+            logger.info(
+                f"[CreatePaymentHandler] "
+                f"New Payment Order ID: {payment.order_id}"
+            )
+
+            # 4. Repository를 통해 DB에 저장
+            repo.save(payment)
+
+            # 5. Aggregate 등록
             uow.domain_register(payment)
 
+        # 6. UoW 종료 시 Commit
         return payment
 
+class ConfirmPayment(ICommand):
+    order_id: UUID
 
 class ConfirmPaymentHandler(ICommandHandler):      # 결제 승인
     def handle(self, command: ICommand, uow: UnitOfWork):
         logger.info(f"[BACKEND] [commands.py] COMMANDHANDLER > ConfirmPaymentHandler")
+        payment = uow.payment_respository.find_by_order_id(command.order_id, for_update=False)
+        with uow:
+            uow.payment_respository.save(payment)
+            uow.domain_register(payment)
 
 class CancelPaymentHandler(ICommandHandler):       # 결제 취소
     def handle(self, command: ICommand, uow: UnitOfWork):
@@ -53,10 +96,3 @@ class CancelPaymentHandler(ICommandHandler):       # 결제 취소
 class PartialCancelPaymentHandler(ICommandHandler):        # 결제 부분 취소
     def handle(self, command: ICommand, uow: UnitOfWork):
         logger.info(f"[BACKEND] [commands.py] COMMANDHANDLER > ParticalCancelPaymentHandler")
-
-
-
-
-
-
-

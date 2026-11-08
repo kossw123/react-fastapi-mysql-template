@@ -17,10 +17,13 @@ from typing import Any
 
 # frontend에서 받는 request
 class PaymentConfirmRequest(BaseModel):
-    order_id: UUID
+    order_id: UUID = Field(
+        alias="orderId"
+    )
     payment_key: str = Field(
         min_length=1,
         max_length=200,
+        alias="paymentKey"
     )
     amount: int = Field(
         gt=0,

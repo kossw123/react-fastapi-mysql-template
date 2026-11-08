@@ -9,14 +9,13 @@ class Payment():
         self,
         order_id: UUID,
         amount: int,
-        status: str,
+        status: PaymentStatus | None,
         payment_key: str | None,
         confirm_idempotency_key: str | None,
-        confirmation_result: None,
+        confirmation_result: str | None,
     ):
         self.root = AggregateRoot()
         self.id: UUID = uuid4()
-
         self.order_id = order_id
         self.amount = amount
         self.status = status
@@ -44,20 +43,6 @@ class Payment():
         payment.root.register(PaymentCreated())
 
         return payment
-
-
-    @classmethod
-    def prepare(cls, order_id: UUID, amount: int):
-        if amount <= 0:
-            raise ValueError("결제 금액은 0보다 커야 합니다.")
-
-        return cls(
-            order_id=order_id,
-            status=PaymentStatus.READY,
-            amount=amount,
-            payment_key=None,
-        )
-
 
     def ready(self):
         if self.status == "PROCESSING":

@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlmodel import JSON, Column, SQLModel, Field
 from pydantic import ConfigDict
 from uuid import uuid4, UUID
+from src.Payment.domain.PaymentStatus import PaymentStatus
 
 
 class PaymentModel(SQLModel, table=True):
@@ -22,7 +23,7 @@ class PaymentModel(SQLModel, table=True):
     )
 
     amount: int
-    status: str = Field(
+    status: PaymentStatus = Field(
         default="READY"
     )
     
