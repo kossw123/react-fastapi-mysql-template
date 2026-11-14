@@ -31,14 +31,9 @@ class PaymentService:
         self.uow = uow
         self.toss_client = toss_client
         self.logger = logging.getLogger(__name__)
-
-    def confirm(self, request: PaymentConfirmRequest):
-        return self.act_confirm(request)
-
-
         
 
-    def act_confirm(self, request: PaymentConfirmRequest):
+    def confirm(self, request: PaymentConfirmRequest):
             # 반드시 먼저 수행할 것:
             # - 주문 소유자와 결제 가능 상태 검증
             # - payment 존재 여부 확인
