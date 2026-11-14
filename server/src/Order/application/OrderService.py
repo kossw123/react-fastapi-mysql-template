@@ -2,9 +2,9 @@ from src.Order.domain.commands import (
     OrderCreate
 )
 from src.Order.infra.models.OrderResponse import OrderResponse
+from src.Order.infra.models.OrderItemResponse import OrderItemResponse
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
-from src.Order.infra.models.OrderItemResponse import OrderItemResponse
 from src.Payment.domain.commands import CreatePayment
 from src.Payment.domain.PaymentStatus import PaymentStatus
 from uuid import uuid4
@@ -38,7 +38,7 @@ class OrderService:
                         id=uuid4(),
                         order_id=order.order_id,
                         amount=order.calculate_total_price(),
-                        payment_key=None)   
+                        payment_key=None)
             self.bus.dispatch(payment_command, self.uow) # handler에서 handle()을 통해 반환되는 결과물은 Payment domain이다. 
         return self._to_OrderResponse(order)
 

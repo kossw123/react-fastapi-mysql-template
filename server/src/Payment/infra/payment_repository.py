@@ -84,3 +84,16 @@ class _Mapper():
                 confirm_idempotency_key=orm.confirm_idempotency_key,
                 confirmation_result=orm.confirmation_result,
             )
+
+
+    def _to_domain(self, model: PaymentModel) -> Payment:
+                return Payment.restore(
+                    id=id,
+                    order_id=model.order_id,
+                    amount=model.amount,
+                    status=model.status,
+                    payment_key=model.payment_key,
+                    confirm_idempotency_key=model.confirm_idempotency_key,
+                    confirmation_result=model.confirmation_result,
+                    processing_started_at=model.processing_started_at,
+                )

@@ -8,6 +8,7 @@ from src.Order.infra.models.OrderResponse import OrderResponse
 from infra.database import verify_access_token
 from src.Order.infra.order_model import OrderModel
 from uuid import UUID
+from src.composite_usecase.CheckoutService import CheckoutService
 
 order_router = APIRouter(prefix="/order", tags=["order"], dependencies=[
     Depends(verify_access_token)
@@ -21,7 +22,9 @@ def read_order(request: OrderRequest,
     print("ROUTER ORDERING CALL")
     bus = container["COMMAND_BUS"]
     dispatcher = container["EVENT_DISPATCHER"]
-    service = OrderService(bus, dispatcher, uow)
+    
+    # service = OrderService(bus, dispatcher, uow)
+    service = CheckoutService(bus, uow, dispatcher)
     return service.create_order(request)
 
 

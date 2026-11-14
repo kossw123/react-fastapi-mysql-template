@@ -29,31 +29,28 @@ class CreatePayment(ICommand):       # 결제 생성
     amount: int
     payment_key: str | None
 
+
+
+# 원칙적으로 트랜잭션 커밋은 Application Layer가 관리하고 Handler에서는 데이터 변경만 수행하는게 좋다.
+# 아래 코드가 왜 필요한지 모르겠다. 이미 하고 있지 않나?
 class CreatePaymentHandler(ICommandHandler):
-
     def handle(self, command: CreatePayment, uow: UnitOfWork):
-
         logger.info("[CreatePaymentHandler] handle start...")
-
         repo = uow.payment_respository
 
         with uow:
-
-            # 1. 기존 Payment 조회
             payment = repo.find_by_order_id(
                 command.order_id,
                 for_update=True
             )
-
-            # 2. 이미 Payment가 존재하면 기존 객체 반환
+            
             if payment is not None:
                 logger.info(
                     f"[CreatePaymentHandler] "
                     f"Existing Payment: {payment.id}"
                 )
                 return payment
-
-            # 3. Payment가 없다면 새 도메인 객체 생성
+            
             payment = Payment.create(
                 order_id=command.order_id,
                 amount=command.amount,
@@ -69,10 +66,7 @@ class CreatePaymentHandler(ICommandHandler):
                 f"New Payment Order ID: {payment.order_id}"
             )
 
-            # 4. Repository를 통해 DB에 저장
             repo.save(payment)
-
-            # 5. Aggregate 등록
             uow.domain_register(payment)
 
         # 6. UoW 종료 시 Commit
